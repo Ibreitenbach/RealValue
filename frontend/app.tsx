@@ -1,63 +1,106 @@
-// frontend/App.tsx
+// frontend/app.tsx
+import "react-native-gesture-handler"; // Required for react-navigation
 import React from "react";
-import HealthCheckScreen from "./src/screens/HealthCheckScreen"; // Import the new screen
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import { Button, View, Text } from "react-native"; // For the temporary navigation button
+
+import HealthCheckScreen from "./src/screens/HealthCheckScreen";
+import PracticeChallengesScreen from "./src/screens/PracticeChallengesScreen";
+import ChallengeAttemptScreen from "./src/screens/ChallengeAttemptScreen";
+import MyCompletionsScreen from "./src/screens/MyCompletionsScreen";
+import MindContentLibraryScreen from "./src/screens/MindContentLibraryScreen"; // Added
+import MindContentFormScreen from "./src/screens/MindContentFormScreen"; // Added
+
+// Define param types for each screen
+export type RootStackParamList = {
+  MainHome: undefined; // A new initial screen that can navigate
+  HealthCheck: undefined;
+  PracticeChallenges: undefined;
+  ChallengeAttempt: { challengeId: number };
+  MyCompletions: undefined;
+  MindContentLibrary: undefined;
+  MindContentForm: { mode: 'add' } | { mode: 'edit'; contentId: number };
+};
+
+const Stack = createStackNavigator<RootStackParamList>();
+
+// Temporary Home Screen to provide navigation options
+const MainHomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
+  return (
+    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+      <Text style={{ fontSize: 20, marginBottom: 20 }}>RealValue App Home</Text>
+      <Button
+        title="Go to Health Check"
+        onPress={() => navigation.navigate("HealthCheck")}
+      />
+      <View style={{ marginVertical: 10 }} />
+      <Button
+        title="Browse Practice Challenges"
+        onPress={() => navigation.navigate("PracticeChallenges")}
+      />
+      <View style={{ marginVertical: 10 }} />
+      <Button
+        title="View My Completions"
+        onPress={() => navigation.navigate("MyCompletions")}
+      />
+      <View style={{ marginVertical: 10 }} />
+      <Button
+        title="Mind Content Library"
+        onPress={() => navigation.navigate("MindContentLibrary")}
+      />
+    </View>
+  );
+};
+
 
 function App() {
-  // const isDarkMode = useColorScheme() === 'dark';
-
-  // const backgroundStyle = {
-  //   backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  // };
-
   return (
-    // <SafeAreaView style={backgroundStyle}>
-    //   <StatusBar
-    //     barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-    //     backgroundColor={backgroundStyle.backgroundColor}
-    //   />
-    //   <ScrollView
-    //     contentInsetAdjustmentBehavior="automatic"
-    //     style={backgroundStyle}>
-    //     <Header />
-    //     <View
-    //       style={{
-    //         backgroundColor: isDarkMode ? Colors.black : Colors.white,
-    //       }}>
-    //       <Text style={styles.sectionTitle}>Welcome to RealValue!</Text>
-    //       <Text style={styles.sectionDescription}>
-    //         This is the starting point for your mobile application.
-    //       </Text>
-    //     </View>
-    //   </ScrollView>
-    // </SafeAreaView>
-    <HealthCheckScreen /> // Render the HealthCheckScreen
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="MainHome">
+        <Stack.Screen
+          name="MainHome"
+          component={MainHomeScreen}
+          options={{ title: "RealValue Home" }}
+        />
+        <Stack.Screen
+          name="HealthCheck"
+          component={HealthCheckScreen}
+          options={{ title: "Backend Health" }}
+        />
+        <Stack.Screen
+          name="PracticeChallenges"
+          component={PracticeChallengesScreen}
+          options={{ title: "Practice Challenges" }}
+        />
+        <Stack.Screen
+          name="ChallengeAttempt"
+          component={ChallengeAttemptScreen}
+          options={({ route }) => ({
+            title: "Attempt Challenge",
+            // Potentially set title based on route.params.challenge?.title if fetched early
+          })}
+        />
+        <Stack.Screen
+          name="MyCompletions"
+          component={MyCompletionsScreen}
+          options={{ title: "My Completions" }}
+        />
+        <Stack.Screen
+          name="MindContentLibrary"
+          component={MindContentLibraryScreen}
+          options={{ title: "Mind Content Library" }}
+        />
+        <Stack.Screen
+          name="MindContentForm"
+          component={MindContentFormScreen}
+          options={({ route }) => ({
+            title: route.params?.mode === 'edit' ? "Edit Content" : "Suggest Content"
+          })}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
-
-// const styles = StyleSheet.create({
-//   sectionContainer: {
-//     marginTop: 32,
-//     paddingHorizontal: 24,
-//   },
-//   sectionTitle: {
-//     fontSize: 24,
-//     fontWeight: '600',
-//     color: Colors.black,
-//     textAlign: 'center',
-//     paddingTop: 20,
-//   },
-//   sectionDescription: {
-//     marginTop: 8,
-//     fontSize: 18,
-//     fontWeight: '400',
-//     color: Colors.darker,
-//     textAlign: 'center',
-//     paddingHorizontal: 24,
-//     paddingBottom: 20,
-//   },
-//   highlight: {
-//     fontWeight: '700',
-//   },
-// });
 
 export default App;

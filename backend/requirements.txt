@@ -7,3 +7,4 @@ python-dotenv # For environment variables
 gunicorn # For production server
 Werkzeug # For password hashing (often a Flask dependency but good to be explicit)
 pytest # For running tests
+PyJWT # For JWT token authentication

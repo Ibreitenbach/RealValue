@@ -49,10 +49,22 @@ def create_app():
     from .routes.health import health_bp
     app.register_blueprint(health_bp)
 
-    from .routes.profile import profile_bp # Import profile blueprint
-    app.register_blueprint(profile_bp)   # Register profile blueprint
+ from .routes.main import main_bp
+    app.register_blueprint(main_bp)
 
-    from .routes.auth import auth_bp # Import auth blueprint
-    app.register_blueprint(auth_bp)   # Register auth blueprint
+    from .routes.health import health_bp
+    app.register_blueprint(health_bp)
+
+    from .routes.profile import profile_bp   # Import profile blueprint
+    app.register_blueprint(profile_bp)       # Register profile blueprint
+
+    from .routes.auth import auth_bp         # Import auth blueprint
+    app.register_blueprint(auth_bp)          # Register auth blueprint
+
+    from .routes.practice_challenges import practice_challenges_bp
+    app.register_blueprint(practice_challenges_bp)
+
+    from .routes.user_routes import user_bp
+    app.register_blueprint(user_bp)
 
     return app
