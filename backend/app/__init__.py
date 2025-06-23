@@ -28,4 +28,12 @@ def create_app():
 
     app.register_blueprint(health_bp)
 
+    from .routes.practice_challenges import practice_challenges_bp
+
+    app.register_blueprint(practice_challenges_bp)
+
+    from .routes.user_routes import user_bp
+
+    app.register_blueprint(user_bp)
+
     return app

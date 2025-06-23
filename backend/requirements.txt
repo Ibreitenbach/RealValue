@@ -3,3 +3,4 @@ Flask
 Flask-SQLAlchemy # For database interaction, can be swapped for others
 python-dotenv # For environment variables
 gunicorn # For production server
+PyJWT # For JWT token authentication
