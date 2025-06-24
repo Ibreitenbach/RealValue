@@ -67,30 +67,28 @@ class TestUserRoutes(unittest.TestCase):
         db.session.add_all([self.template1, self.template2])
         db.session.commit()
 
-        completion1_user1 = UserChallengeCompletion( # Made local, not self.
-            user_id=self.user1_id, # Use ID
+        completion1_user1 = UserChallengeCompletion(  # Made local, not self.
+            user_id=self.user1_id,  # Use ID
             challenge_template_id=self.template1.id,
             status=CompletionStatus.COMPLETED,
             completed_at=datetime.utcnow() - timedelta(days=1),
             user_response="User1 response to A",
         )
-        completion2_user1 = UserChallengeCompletion( # Made local, not self.
-            user_id=self.user1_id, # Use ID
+        completion2_user1 = UserChallengeCompletion(  # Made local, not self.
+            user_id=self.user1_id,  # Use ID
             challenge_template_id=self.template2.id,
             status=CompletionStatus.PENDING_REVIEW,
             completed_at=datetime.utcnow(),
             user_response="User1 response to B",
         )
-        completion1_user2 = UserChallengeCompletion( # Made local, not self.
-            user_id=self.user2_id, # Use ID
+        completion1_user2 = UserChallengeCompletion(  # Made local, not self.
+            user_id=self.user2_id,  # Use ID
             challenge_template_id=self.template1.id,
             status=CompletionStatus.COMPLETED,
             completed_at=datetime.utcnow() - timedelta(hours=5),
             user_response="User2 response to A",
         )
-        db.session.add_all(
-            [completion1_user1, completion2_user1, completion1_user2]
-        )
+        db.session.add_all([completion1_user1, completion2_user1, completion1_user2])
         db.session.commit()
 
         # g.current_user_id will be set in each test method.
@@ -98,7 +96,8 @@ class TestUserRoutes(unittest.TestCase):
     def test_get_my_challenge_completions(self):
         with self.app.app_context():
             from flask import g
-            g.current_user_id = self.user1_id # Test for user1
+
+            g.current_user_id = self.user1_id  # Test for user1
 
         headers = {"Authorization": f"Bearer {get_mock_auth_token(self.user1_id)}"}
         response = self.client.get(
@@ -114,7 +113,7 @@ class TestUserRoutes(unittest.TestCase):
         self.assertEqual(response_template_ids, expected_template_ids)
 
         for item in data:
-            self.assertEqual(item["user_id"], self.user1_id) # Compare with ID
+            self.assertEqual(item["user_id"], self.user1_id)  # Compare with ID
             if item["challenge_template_id"] == self.template1.id:
                 self.assertEqual(item["user_response"], "User1 response to A")
                 self.assertEqual(item["status"], "completed")
@@ -126,14 +125,15 @@ class TestUserRoutes(unittest.TestCase):
         # Create a new user with no completions
         new_user_obj = User(username="user3_nocompletions", email="user3@example.com")
         new_user_id = None
-        with self.app.app_context(): # Ensure this new user is added in an app context
+        with self.app.app_context():  # Ensure this new user is added in an app context
             db.session.add(new_user_obj)
             db.session.commit()
-            new_user_id = new_user_obj.id # Get ID after commit
+            new_user_id = new_user_obj.id  # Get ID after commit
 
-        with self.app.test_request_context(): # Use test_request_context for g
+        with self.app.test_request_context():  # Use test_request_context for g
             from flask import g
-            g.current_user_id = new_user_id # Set current user to the new user's ID
+
+            g.current_user_id = new_user_id  # Set current user to the new user's ID
 
         headers = {"Authorization": f"Bearer {get_mock_auth_token(new_user_id)}"}
         response = self.client.get(

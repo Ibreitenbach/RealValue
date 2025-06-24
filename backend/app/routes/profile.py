@@ -19,7 +19,7 @@ def get_my_profile():
         profile = UserProfile(
             user_id=user.id,
             display_name=user.username,  # Default display name to username
-            bio=""  # Empty bio
+            bio="",  # Empty bio
         )
         db.session.add(profile)
         db.session.commit()
@@ -45,9 +45,8 @@ def update_my_profile():
         # The tests ensure profile exists before PUT if they call register_user or GET /me.
         pass
 
-
-    data = request.get_json(silent=True) # Use silent=True
-    if data is None: # Explicitly check for None
+    data = request.get_json(silent=True)  # Use silent=True
+    if data is None:  # Explicitly check for None
         return jsonify({"msg": "Invalid or missing JSON in request"}), 400
 
     # If data is an empty JSON object {}, it's not None, so this will proceed.
