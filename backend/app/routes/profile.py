@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, current_user  # Assuming Flask-JWT-Extended
 
-from ..models import UserProfile, User
+from ..models import UserProfile
 from .. import db
 
 profile_bp = Blueprint("profile", __name__, url_prefix="/api/profile")

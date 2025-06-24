@@ -1,23 +1,28 @@
 # shared/models/profile.py
 from typing import Optional, TypedDict
 
+
 class SharedUserProfileData(TypedDict, total=False):
     """
     Defines the structure for user profile data that is typically displayed
     or edited. Matches the backend UserProfile.to_dict() structure.
     `user_id` is often implicit in context (e.g. /api/profile/me) but can be present.
     """
-    user_id: Optional[int] # Read-only, from backend
+
+    user_id: Optional[int]  # Read-only, from backend
     display_name: Optional[str]
     bio: Optional[str]
+
 
 class SharedUserProfileUpdatePayload(TypedDict, total=False):
     """
     Defines the structure for updating a user's profile.
     Frontend will send this. All fields are optional for partial updates.
     """
+
     display_name: Optional[str]
     bio: Optional[str]
+
 
 # For frontend convenience, we can also define a class if needed,
 # but TypedDict is often sufficient for API data contracts.

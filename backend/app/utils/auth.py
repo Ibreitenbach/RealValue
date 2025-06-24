@@ -2,7 +2,7 @@
 from functools import wraps
 from flask import request, jsonify, g
 import jwt  # PyJWT
-from backend.app.models import User  # Assuming User model can be imported like this
+from ..models import User  # Corrected import
 import os
 
 # In a real application, this key should be securely managed and consistent

@@ -16,7 +16,7 @@ def mock_token_required(f):
 
         # Fetch the user fresh from the current session using the ID
         # Assumes an app context is active here, which Flask tests usually provide for routes.
-        current_user = db.session.get(User, g.current_user_id)
+  current_user = db.session.get(User, g.current_user_id)  # Use Session.get for PK lookups
         if not current_user:
             # This case simulates a token for a user that no longer exists.
             return (
