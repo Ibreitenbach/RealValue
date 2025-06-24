@@ -2,7 +2,7 @@
 from flask import Blueprint, jsonify, request, g  # noqa: F401
 from datetime import datetime
 from backend.app import db  # Import db from backend.app
-from backend.app.models import ( # Import models from backend.app.models
+from backend.app.models import (  # Import models from backend.app.models
     PracticeChallengeTemplate,
     UserChallengeCompletion,
     # ChallengeType, # Removed as it's unused
