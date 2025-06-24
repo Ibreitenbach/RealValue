@@ -9,6 +9,9 @@ import GiveEndorsementScreen from '../screens/GiveEndorsementScreen';
 // Import other screens like HomeScreen, SettingsScreen, etc.
 // import HomeScreen from '../screens/HomeScreen';
 // import HealthCheckScreen from '../screens/HealthCheckScreen'; // Example existing screen
+import ExchangeBoardScreen from '../screens/ExchangeBoardScreen';
+import ExchangeOfferFormScreen from '../screens/ExchangeOfferFormScreen';
+import MyExchangeOffersScreen from '../screens/MyExchangeOffersScreen';
 
 // Define the types for your stack parameters
 export type RootStackParamList = {
@@ -16,6 +19,11 @@ export type RootStackParamList = {
   // HealthCheck: undefined; // Example
   Profile: { userId?: string }; // Optional userId
   GiveEndorsement: { endorseeId: string; endorseeName?: string };
+
+  // Skill Exchange Board Feature Screens
+  ExchangeBoard: undefined; // No params for the main board
+  ExchangeOfferForm: { offerId?: string }; // Optional offerId for editing
+  MyExchangeOffers: undefined; // No params
   // ... other screens
 };
 
@@ -59,6 +67,26 @@ const AppNavigator: React.FC = () => {
           name="GiveEndorsement"
           component={GiveEndorsementScreen}
           options={{ title: 'Give Endorsement' }}
+        />
+
+        {/* Skill Exchange Board Screens */}
+        <Stack.Screen
+          name="ExchangeBoard"
+          component={ExchangeBoardScreen}
+          options={{ title: 'Skill Exchange Board' }}
+        />
+        <Stack.Screen
+          name="ExchangeOfferForm"
+          component={ExchangeOfferFormScreen}
+          // Options can be dynamic based on route params (e.g., if editing)
+          options={({ route }) => ({
+            title: route.params?.offerId ? 'Edit Exchange Offer' : 'Create Exchange Offer'
+          })}
+        />
+        <Stack.Screen
+          name="MyExchangeOffers"
+          component={MyExchangeOffersScreen}
+          options={{ title: 'My Exchange Offers' }}
         />
         {/* Add other screens for your application here */}
       </Stack.Navigator>
