@@ -1,40 +1,38 @@
 # backend/tests/mock_auth.py
 from functools import wraps
-from flask import g
+from flask import g, jsonify  # Ensure jsonify is imported
 from backend.app.models import User
 from backend.app import db  # Import db for session access
+
+# Duplicate imports removed below
 
 
 def mock_token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+        # If g.current_user_id is not set or is None, simulate token missing/invalid
         if not hasattr(g, "current_user_id") or g.current_user_id is None:
-            # This is a fallback if a test doesn't explicitly set g.current_user_id.
-            # Tests SHOULD set g.current_user_id for clarity.
-            # print("Warning: g.current_user_id not set by test, attempting fallback in mock_token_required.")
-
-            # Query within the current app/session context, provided by Flask test runner for routes
-            default_user = User.query.first()
-            if not default_user:
-                raise RuntimeError(
-                    "mock_token_required: No user found in DB for fallback "
-                    "and g.current_user_id was not set by the test."
-                )
-            g.current_user_id = default_user.id
+            return jsonify({"message": "Token is missing or invalid"}), 401
 
         # Fetch the user fresh from the current session using the ID
         # Assumes an app context is active here, which Flask tests usually provide for routes.
-        current_user = db.session.get(User, g.current_user_id)  # Use Session.get for PK lookups
+        current_user = db.session.get(User, g.current_user_id)
         if not current_user:
-            raise RuntimeError(
-                f"mock_token_required: User with id {g.current_user_id} "
-                "not found in the current session."
+            # This case simulates a token for a user that no longer exists.
+            return (
+                jsonify(
+                    {"message": f"User with id {g.current_user_id} not found"}
+                ),  # Line-too-long can be fixed by black
+                401,
             )
 
-        # Store the fetched, session-bound user object in g for the route to use
+        # Store the fetched, session-bound user object in g for the route to use by convention,
+        # although the route itself receives current_user as an argument.
         g.current_user = current_user
 
-        return f(current_user, *args, **kwargs)  # Pass current_user to the decorated function
+        return f(
+            current_user, *args, **kwargs
+        )  # Pass current_user to the decorated function
 
     return decorated
 

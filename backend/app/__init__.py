@@ -15,14 +15,16 @@ def create_app():
     load_dotenv()  # Load .env file
     app = Flask(__name__)
     app.config["SECRET_KEY"] = os.getenv(
-        "SECRET_KEY", "a_default_secret_key_if_not_set_for_dev" # Ensure this is strong in prod
+        "SECRET_KEY",
+        "a_default_secret_key_if_not_set_for_dev",  # Ensure this is strong in prod
     )
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
-        "DATABASE_URL", "sqlite:///realvalue.db" # Changed default db name
+        "DATABASE_URL", "sqlite:///realvalue.db"  # Changed default db name
     )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["JWT_SECRET_KEY"] = os.getenv(
-        "JWT_SECRET_KEY", "a_default_jwt_secret_key_if_not_set_for_dev" # Ensure this is strong in prod
+        "JWT_SECRET_KEY",
+        "a_default_jwt_secret_key_if_not_set_for_dev",  # Ensure this is strong in prod
     )
 
     db.init_app(app)
@@ -30,8 +32,9 @@ def create_app():
     migrate.init_app(app, db)  # Initialize Migrate with app and db
 
     # User loader function for Flask-JWT-Extended
-    from .models import User # Models need to be imported for migrate to detect them
+    from .models import User  # Models need to be imported for migrate to detect them
     from .models import UserProfile
+
     @jwt.user_lookup_loader
     def user_lookup_callback(_jwt_header, jwt_data):
         identity = jwt_data["sub"]
@@ -44,27 +47,31 @@ def create_app():
         return User.query.filter_by(id=user_id).one_or_none()
 
     from .routes.main import main_bp
+
     app.register_blueprint(main_bp)
 
     from .routes.health import health_bp
+
     app.register_blueprint(health_bp)
 
- from .routes.main import main_bp
-    app.register_blueprint(main_bp)
+    from .routes.profile import profile_bp  # Import profile blueprint
 
-    from .routes.health import health_bp
-    app.register_blueprint(health_bp)
+    app.register_blueprint(profile_bp)  # Register profile blueprint
 
-    from .routes.profile import profile_bp   # Import profile blueprint
-    app.register_blueprint(profile_bp)       # Register profile blueprint
+    from .routes.auth import auth_bp  # Import auth blueprint
 
-    from .routes.auth import auth_bp         # Import auth blueprint
-    app.register_blueprint(auth_bp)          # Register auth blueprint
+    app.register_blueprint(auth_bp)  # Register auth blueprint
 
     from .routes.practice_challenges import practice_challenges_bp
+
     app.register_blueprint(practice_challenges_bp)
 
     from .routes.user_routes import user_bp
+
     app.register_blueprint(user_bp)
+
+    from .routes.donation_routes import donation_bp  # Import donation blueprint
+
+    app.register_blueprint(donation_bp)  # Register donation blueprint
 
     return app

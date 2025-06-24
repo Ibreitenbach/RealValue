@@ -1,7 +1,7 @@
 # backend/app/routes/practice_challenges.py
 from flask import Blueprint, jsonify, request, g  # noqa: F401
 from datetime import datetime
-from backend.app import db # Import db from backend.app
+from backend.app import db  # Import db from backend.app
 from backend.app.models import (
     PracticeChallengeTemplate,
     UserChallengeCompletion,

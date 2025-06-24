@@ -1,95 +1,210 @@
 # backend/seed.py
 from backend.app import create_app, db
-from backend.app.models import PracticeChallengeTemplate, ChallengeType, DifficultyLevel
+from backend.app.models import (
+    User,
+    PracticeChallengeTemplate,
+    ChallengeType,
+    DifficultyLevel,
+    Donation,
+)
+
+# from datetime import datetime, timedelta # Currently unused
 
 
-def seed_data():
-    app = create_app()
-    with app.app_context():
-        # Clear existing data (optional, use with caution)
-        # PracticeChallengeTemplate.query.delete()
-        # db.session.commit()
+def seed_users():
+    """Seeds sample users if they don't already exist."""
+    users_data = [
+        {
+            "username": "seeduser1",
+            "email": "seeduser1@example.com",
+            "password": "password123",
+        },
+        {
+            "username": "seeduser2",
+            "email": "seeduser2@example.com",
+            "password": "password456",
+        },
+    ]
 
-        # Sample Practice Challenge Templates
-        templates_data = [
-            {
-                "title": "Mindful Minute",
-                "description": "Take 60 seconds to focus on your breath. Notice the sensation of air entering and leaving your body. If your mind wanders, gently bring your attention back to your breath.",
-                "challenge_type": ChallengeType.CHECKBOX_COMPLETION,
-                "difficulty": DifficultyLevel.EASY,
-                "is_active": True,
-                "associated_skill_id": None,  # Or some skill ID if skills are seeded/known
-            },
-            {
-                "title": "Identify 3 Local Edible Plants",
-                "description": "Research and identify three edible plants that grow in your local area. Describe them or upload photos. (For this seed, we'll assume checkbox completion).",
-                "challenge_type": ChallengeType.TEXT_RESPONSE,  # Changed to TEXT_RESPONSE for variety
-                "difficulty": DifficultyLevel.MEDIUM,
-                "is_active": True,
-                "associated_skill_id": None,
-            },
-            {
-                "title": "Fix a Virtual Leaky Faucet",
-                "description": "Imagine you have a leaky faucet. Write down the steps you would take to fix it, or find a video tutorial and summarize the key steps.",
-                "challenge_type": ChallengeType.TEXT_RESPONSE,
-                "difficulty": DifficultyLevel.MEDIUM,
-                "is_active": True,
-                "associated_skill_id": None,
-            },
-            {
-                "title": "Gratitude Journal Entry",
-                "description": "Write down three things you are grateful for today and why.",
-                "challenge_type": ChallengeType.TEXT_RESPONSE,
-                "difficulty": DifficultyLevel.EASY,
-                "is_active": True,
-                "associated_skill_id": None,
-            },
-            {
-                "title": "Share a Photo of Nature",
-                "description": "Go outside, take a photo of something in nature that you find beautiful or interesting, and share it (simulated by text response for now).",
-                "challenge_type": ChallengeType.PHOTO_UPLOAD,  # Represents photo upload
-                "difficulty": DifficultyLevel.EASY,
-                "is_active": True,
-                "associated_skill_id": None,
-            },
-            {
-                "title": "Plan a Healthy Meal",
-                "description": "Plan a balanced and healthy meal for dinner tonight. List the main ingredients and why it's a healthy choice.",
-                "challenge_type": ChallengeType.TEXT_RESPONSE,
-                "difficulty": DifficultyLevel.MEDIUM,
-                "is_active": False,  # Example of an inactive challenge
-                "associated_skill_id": None,
-            },
-        ]
+    created_users = []
+    for user_data in users_data:
+        existing_user = User.query.filter(
+            (User.username == user_data["username"])
+            | (User.email == user_data["email"])
+        ).first()
+        if not existing_user:
+            user = User(username=user_data["username"], email=user_data["email"])
+            user.set_password(user_data["password"])
+            db.session.add(user)
+            created_users.append(user)
+            print(f"Added user: {user_data['username']}")
+        else:
+            created_users.append(existing_user)
+            print(
+                f"User '{user_data['username']}' or email "
+                f"'{user_data['email']}' already exists. Skipping creation."
+            )
 
-        existing_titles = {
-            template.title for template in PracticeChallengeTemplate.query.all()
-        }
-
-        for data in templates_data:
-            if data["title"] not in existing_titles:
-                template = PracticeChallengeTemplate(
-                    title=data["title"],
-                    description=data["description"],
-                    challenge_type=data["challenge_type"],
-                    difficulty=data["difficulty"],
-                    is_active=data["is_active"],
-                    associated_skill_id=data["associated_skill_id"],
-                )
-                db.session.add(template)
-                print(f"Added challenge: {data['title']}")
-            else:
-                print(f"Challenge '{data['title']}' already exists. Skipping.")
-
+    if created_users:
         try:
             db.session.commit()
-            print("Sample practice challenge templates seeded successfully.")
+            print("Users seeded/checked successfully.")
+            for i, user_data in enumerate(users_data):
+                u = User.query.filter_by(username=user_data["username"]).first()
+                if u:
+                    created_users[i] = u
         except Exception as e:
             db.session.rollback()
-            print(f"Error seeding data: {e}")
+            print(f"Error seeding users: {e}")
+    return created_users
+
+
+def seed_practice_challenges():
+    """Seeds sample practice challenge templates."""
+    templates_data = [
+        {
+            "title": "Mindful Minute",
+            "description": "Take 60 seconds to focus on your breath...",
+            "challenge_type": ChallengeType.CHECKBOX_COMPLETION,
+            "difficulty": DifficultyLevel.EASY,
+            "is_active": True,
+        },
+        {
+            "title": "Identify 3 Local Edible Plants",
+            "description": "Research and identify three edible plants...",
+            "challenge_type": ChallengeType.TEXT_RESPONSE,
+            "difficulty": DifficultyLevel.MEDIUM,
+            "is_active": True,
+        },
+    ]
+    existing_titles = {
+        template.title for template in PracticeChallengeTemplate.query.all()
+    }
+    for data in templates_data:
+        if data["title"] not in existing_titles:
+            template = PracticeChallengeTemplate(
+                title=data["title"],
+                description=data["description"],
+                challenge_type=data["challenge_type"],
+                difficulty=data["difficulty"],
+                is_active=data["is_active"],
+            )
+            db.session.add(template)
+            print(f"Added challenge: {data['title']}")
+        else:
+            print(f"Challenge '{data['title']}' already exists. Skipping.")
+    try:
+        db.session.commit()
+        print("Sample practice challenge templates seeded successfully.")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error seeding practice challenges: {e}")
+
+
+def seed_donations(users):
+    """Seeds sample donations."""
+    user1_id = None
+    user2_id = None
+    if users and len(users) > 0 and hasattr(users[0], "id"):
+        user1_id = users[0].id
+    if users and len(users) > 1 and hasattr(users[1], "id"):
+        user2_id = users[1].id
+
+    donations_data = [
+        {
+            "user_id": user1_id,
+            "amount": 25.00,
+            "currency": "USD",
+            "is_anonymous": False,
+            "transaction_id": "SEED_TXN_001",
+        },
+        {
+            "user_id": user2_id,
+            "amount": 10.50,
+            "currency": "EUR",
+            "is_anonymous": True,  # User 2 wants to be anon
+            "transaction_id": "SEED_TXN_002",
+        },
+        {
+            "user_id": None,
+            "amount": 5.00,
+            "currency": "USD",  # Fully anonymous
+            "is_anonymous": True,
+            "transaction_id": "SEED_TXN_003",
+        },
+        {
+            "user_id": user1_id,
+            "amount": 15.00,
+            "currency": "USD",
+            "is_anonymous": False,
+            "transaction_id": "SEED_TXN_004",
+        },
+    ]
+
+    existing_txn_ids = {
+        d.transaction_id for d in Donation.query.all() if d.transaction_id
+    }
+
+    for data in donations_data:
+        if data["transaction_id"] in existing_txn_ids:
+            print(
+                f"Donation with transaction ID '{data['transaction_id']}' "
+                f"already exists. Skipping."
+            )
+            continue
+
+        if data["user_id"]:
+            user_exists = User.query.get(data["user_id"])
+            if not user_exists:
+                print(
+                    f"User with ID {data['user_id']} not found for donation. "
+                    f"Skipping."
+                )
+                continue
+
+        donation = Donation(
+            user_id=data["user_id"],
+            amount=data["amount"],
+            currency=data["currency"],
+            is_anonymous=data["is_anonymous"],
+            transaction_id=data["transaction_id"],
+            status="completed",
+        )
+        db.session.add(donation)
+        print(
+            f"Adding donation: {data['amount']} {data['currency']} "
+            f"(TXN: {data['transaction_id']})"
+        )
+
+    try:
+        db.session.commit()
+        print("Sample donations seeded successfully.")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error seeding donations: {e}")
+
+
+def seed_all_data():
+    app = create_app()
+    with app.app_context():
+        db.create_all()
+
+        print("--- Seeding Users ---")
+        seeded_users = seed_users()
+
+        print("\n--- Seeding Practice Challenges ---")
+        seed_practice_challenges()
+
+        print("\n--- Seeding Donations ---")
+        if seeded_users:
+            seed_donations(seeded_users)
+        else:
+            print("Skipping donation seeding as no users were available.")
+
+        print("\nAll seeding processes complete.")
 
 
 if __name__ == "__main__":
-    print("Seeding database...")
-    seed_data()
-    print("Seeding complete.")
+    print("Starting database seeding process...")
+    seed_all_data()
+    print("Database seeding process finished.")
