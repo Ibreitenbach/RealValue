@@ -16,15 +16,15 @@ def create_app():
     app = Flask(__name__)
     app.config["SECRET_KEY"] = os.getenv(
         "SECRET_KEY",
-        "a_default_secret_key_if_not_set_for_dev",  # Ensure strong in prod
+    "a_default_secret_key_if_not_set_for_dev",  # Ensure this is strong in prod
     )
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
-        "DATABASE_URL", "sqlite:///realvalue.db"  # Default db name
+        "DATABASE_URL", "sqlite:///realvalue.db"  # Changed default db name
     )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["JWT_SECRET_KEY"] = os.getenv(
         "JWT_SECRET_KEY",
-        "a_default_jwt_secret_key_if_not_set_for_dev",  # Ensure strong in prod
+  "a_default_jwt_secret_key_if_not_set_for_dev",  # Ensure this is strong in prod
     )
 
     db.init_app(app)
@@ -32,10 +32,17 @@ def create_app():
     migrate.init_app(app, db)  # Initialize Migrate with app and db
 
     # User loader function for Flask-JWT-Extended
-    # Models need to be imported for migrate to detect them:
-    from .models import User
-
-    # UserProfile unused here; models loaded via app.models
+ from .models import (  # Models need to be imported for migrate to detect them
+        User,
+        UserProfile,
+        PracticeChallengeTemplate,  # noqa: F401
+        UserChallengeCompletion,  # noqa: F401
+        JournalEntry,  # noqa: F401
+        MindsetChallengeTemplate,  # noqa: F401
+        UserMindsetCompletion,  # noqa: F401
+        MindfulMomentTemplate,  # noqa: F401
+        UserReminderSetting,  # noqa: F401
+    )
 
     @jwt.user_lookup_loader
     def user_lookup_callback(_jwt_header, jwt_data):
@@ -56,11 +63,7 @@ def create_app():
 
     app.register_blueprint(health_bp)
 
-    # Duplicated block removed and indentation fixed.
-    # The main_bp and health_bp are already registered above.
-
-    from .routes.profile import profile_bp  # Import profile blueprint
-
+ from .routes.profile import profile_bp  # Import profile blueprint
     app.register_blueprint(profile_bp)  # Register profile blueprint
 
     from .routes.auth import auth_bp  # Import auth blueprint
@@ -75,8 +78,13 @@ def create_app():
 
     app.register_blueprint(user_bp)
 
-    from .routes.exchange_routes import exchange_bp  # Import exchange_bp
-
+from .routes.exchange_routes import exchange_bp  # Import exchange_bp
     app.register_blueprint(exchange_bp)  # Register exchange_bp
+
+    from .routes.mind_progress_routes import mind_progress_bp
+    app.register_blueprint(mind_progress_bp)
+
+    from .routes.donation_routes import donation_bp  # Import donation blueprint
+    app.register_blueprint(donation_bp)  # Register donation blueprint
 
     return app

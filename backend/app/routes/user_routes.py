@@ -1,12 +1,12 @@
 # backend/app/routes/user_routes.py
-from flask import Blueprint, jsonify, request  # Removed g
-from backend.app.models import (
-    UserChallengeCompletion,
-    ExchangeOffer,
-    OfferStatusEnum,
-    User,  # noqa: F401 # Used for type hinting current_user
-)  # Added ExchangeOffer, OfferStatusEnum, User
-from backend.app.utils.auth import token_required
+from flask import Blueprint, jsonify, request, g  # Include request and g
+from backend.app.models import ( # Use absolute import for models
+    User, # Often used for type hinting with g.current_user
+    UserChallengeCompletion, # From main side
+    ExchangeOffer, # From feature/skill-exchange-backend side
+    OfferStatusEnum, # From feature/skill-exchange-backend side
+)
+from backend.app.utils.auth import token_required # Use absolute import for utils
 
 user_bp = Blueprint("user_routes", __name__, url_prefix="/api/users")
 
