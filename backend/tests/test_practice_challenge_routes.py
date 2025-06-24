@@ -96,8 +96,9 @@ class TestPracticeChallengeRoutes(unittest.TestCase):
         # g.current_user = self.test_user # Removed
 
     def test_get_active_practice_challenge_templates(self):
-        with self.app.app_context(): # Ensure app context for g
+        with self.app.app_context():  # Ensure app context for g
             from flask import g
+
             g.current_user_id = self.test_user_id
         # Provide a mock token in headers, even if decorator is mocked, it's good practice
         headers = {"Authorization": f"Bearer {get_mock_auth_token(self.test_user_id)}"}
@@ -116,6 +117,7 @@ class TestPracticeChallengeRoutes(unittest.TestCase):
     def test_get_templates_filtered_by_difficulty(self):
         with self.app.app_context():
             from flask import g
+
             g.current_user_id = self.test_user_id
         headers = {"Authorization": f"Bearer {get_mock_auth_token(self.test_user_id)}"}
         response = self.client.get(
@@ -142,6 +144,7 @@ class TestPracticeChallengeRoutes(unittest.TestCase):
     def test_get_templates_filtered_by_skill_id(self):
         with self.app.app_context():
             from flask import g
+
             g.current_user_id = self.test_user_id
         headers = {"Authorization": f"Bearer {get_mock_auth_token(self.test_user_id)}"}
         response = self.client.get(
@@ -160,6 +163,7 @@ class TestPracticeChallengeRoutes(unittest.TestCase):
     def test_get_specific_practice_challenge_template_detail(self):
         with self.app.app_context():
             from flask import g
+
             g.current_user_id = self.test_user_id
         headers = {"Authorization": f"Bearer {get_mock_auth_token(self.test_user_id)}"}
         response = self.client.get(
@@ -172,6 +176,7 @@ class TestPracticeChallengeRoutes(unittest.TestCase):
     def test_get_specific_template_not_found(self):
         with self.app.app_context():
             from flask import g
+
             g.current_user_id = self.test_user_id
         headers = {"Authorization": f"Bearer {get_mock_auth_token(self.test_user_id)}"}
         response = self.client.get(
@@ -182,6 +187,7 @@ class TestPracticeChallengeRoutes(unittest.TestCase):
     def test_complete_practice_challenge_success(self):
         with self.app.app_context():
             from flask import g
+
             g.current_user_id = self.test_user_id
         headers = {
             "Authorization": f"Bearer {get_mock_auth_token(self.test_user_id)}",
@@ -199,12 +205,12 @@ class TestPracticeChallengeRoutes(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
         data = json.loads(response.data)
         self.assertEqual(data["challenge_template_id"], self.template1.id)
-        self.assertEqual(data["user_id"], self.test_user_id) # Compare with ID
+        self.assertEqual(data["user_id"], self.test_user_id)  # Compare with ID
         self.assertEqual(data["user_response"], "I completed this easy challenge!")
         self.assertEqual(data["status"], "completed")  # Default status in route
 
         completion_in_db = UserChallengeCompletion.query.filter_by(
-            user_id=self.test_user_id, challenge_template_id=self.template1.id # Use ID
+            user_id=self.test_user_id, challenge_template_id=self.template1.id  # Use ID
         ).first()
         self.assertIsNotNone(completion_in_db)
         self.assertEqual(
@@ -214,6 +220,7 @@ class TestPracticeChallengeRoutes(unittest.TestCase):
     def test_complete_challenge_template_not_found(self):
         with self.app.app_context():
             from flask import g
+
             g.current_user_id = self.test_user_id
         headers = {
             "Authorization": f"Bearer {get_mock_auth_token(self.test_user_id)}",
@@ -233,6 +240,7 @@ class TestPracticeChallengeRoutes(unittest.TestCase):
     def test_complete_challenge_inactive_template(self):
         with self.app.app_context():
             from flask import g
+
             g.current_user_id = self.test_user_id
         headers = {
             "Authorization": f"Bearer {get_mock_auth_token(self.test_user_id)}",
@@ -254,6 +262,7 @@ class TestPracticeChallengeRoutes(unittest.TestCase):
     def test_complete_challenge_missing_template_id(self):
         with self.app.app_context():
             from flask import g
+
             g.current_user_id = self.test_user_id
         headers = {
             "Authorization": f"Bearer {get_mock_auth_token(self.test_user_id)}",
