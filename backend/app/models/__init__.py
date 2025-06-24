@@ -23,22 +23,24 @@ from .mindful_moment import (
     UserReminderSetting,
     MindfulMomentReminderFrequency,
 )
+from .donation import Donation # From main side
 
 
 __all__ = [
     "User",
-    "UserProfile",
+"UserProfile",
     "PracticeChallengeTemplate",
     "UserChallengeCompletion",
     "ChallengeType",
     "DifficultyLevel",
     "CompletionStatus",
-    "JournalEntry",
-    "MindsetChallengeTemplate",
-    "UserMindsetCompletion",
-    "MindsetChallengeFrequency",
-    "MindsetCompletionStatus",
-    "MindfulMomentTemplate",
-    "UserReminderSetting",
-    "MindfulMomentReminderFrequency",
+    "JournalEntry", # From mind-progress-visualization-backend
+    "MindsetChallengeTemplate", # From mind-progress-visualization-backend
+    "UserMindsetCompletion", # From mind-progress-visualization-backend
+    "MindsetChallengeFrequency", # From mind-progress-visualization-backend
+    "MindsetCompletionStatus", # From mind-progress-visualization-backend
+    "MindfulMomentTemplate", # From mind-progress-visualization-backend
+    "UserReminderSetting", # From mind-progress-visualization-backend
+    "MindfulMomentReminderFrequency", # From mind-progress-visualization-backend
+    "Donation", # From main
 ]

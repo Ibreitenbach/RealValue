@@ -32,9 +32,9 @@ def create_app():
     migrate.init_app(app, db)  # Initialize Migrate with app and db
 
     # User loader function for Flask-JWT-Extended
-    from .models import (  # Models need to be imported for migrate to detect them
+   from .models import (  # Models need to be imported for migrate to detect them
         User,
-        UserProfile,  # noqa: F401
+        UserProfile,
         PracticeChallengeTemplate,  # noqa: F401
         UserChallengeCompletion,  # noqa: F401
         JournalEntry,  # noqa: F401
@@ -79,8 +79,10 @@ def create_app():
 
     app.register_blueprint(user_bp)
 
-    from .routes.mind_progress_routes import mind_progress_bp
-
+from .routes.mind_progress_routes import mind_progress_bp
     app.register_blueprint(mind_progress_bp)
+
+    from .routes.donation_routes import donation_bp  # Import donation blueprint
+    app.register_blueprint(donation_bp)  # Register donation blueprint
 
     return app
