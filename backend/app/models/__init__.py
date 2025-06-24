@@ -3,21 +3,26 @@
 # and for Flask-Migrate to detect them.
 
 from .user import User
-from .user_profile import UserProfile # From feat/user-profile-management-basic side
-from .practice_challenge import (    # From main side
+from .user_profile import UserProfile
+from .practice_challenge import (
     PracticeChallengeTemplate,
     UserChallengeCompletion,
     ChallengeType,
     DifficultyLevel,
     CompletionStatus,
 )
+from .skill import Skill
+from .exchange_offer import ExchangeOffer, OfferStatusEnum
 
 __all__ = [
     "User",
-    "UserProfile", # From feat/user-profile-management-basic side
-    "PracticeChallengeTemplate", # From main side
-    "UserChallengeCompletion",   # From main side
-    "ChallengeType",             # From main side
-    "DifficultyLevel",           # From main side
-    "CompletionStatus",          # From main side
+    "UserProfile",
+    "PracticeChallengeTemplate",
+    "UserChallengeCompletion",
+    "ChallengeType",
+    "DifficultyLevel",
+    "CompletionStatus",
+    "Skill",
+    "ExchangeOffer",
+    "OfferStatusEnum",
 ]
