@@ -1,106 +1,65 @@
-// frontend/app.tsx
-import "react-native-gesture-handler"; // Required for react-navigation
-import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
-import { Button, View, Text } from "react-native"; // For the temporary navigation button
+// frontend/App.tsx
+import React from 'react';
+import AppNavigator from './src/navigation/AppNavigator'; // Assuming AppNavigator is in src/navigation
+import { AuthProvider } from './src/context/AuthContext'; // Adjust path as needed
 
-import HealthCheckScreen from "./src/screens/HealthCheckScreen";
-import PracticeChallengesScreen from "./src/screens/PracticeChallengesScreen";
-import ChallengeAttemptScreen from "./src/screens/ChallengeAttemptScreen";
-import MyCompletionsScreen from "./src/screens/MyCompletionsScreen";
-import MindContentLibraryScreen from "./src/screens/MindContentLibraryScreen"; // Added
-import MindContentFormScreen from "./src/screens/MindContentFormScreen"; // Added
-
-// Define param types for each screen
-export type RootStackParamList = {
-  MainHome: undefined; // A new initial screen that can navigate
-  HealthCheck: undefined;
-  PracticeChallenges: undefined;
-  ChallengeAttempt: { challengeId: number };
-  MyCompletions: undefined;
-  MindContentLibrary: undefined;
-  MindContentForm: { mode: 'add' } | { mode: 'edit'; contentId: number };
-};
-
-const Stack = createStackNavigator<RootStackParamList>();
-
-// Temporary Home Screen to provide navigation options
-const MainHomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
-  return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <Text style={{ fontSize: 20, marginBottom: 20 }}>RealValue App Home</Text>
-      <Button
-        title="Go to Health Check"
-        onPress={() => navigation.navigate("HealthCheck")}
-      />
-      <View style={{ marginVertical: 10 }} />
-      <Button
-        title="Browse Practice Challenges"
-        onPress={() => navigation.navigate("PracticeChallenges")}
-      />
-      <View style={{ marginVertical: 10 }} />
-      <Button
-        title="View My Completions"
-        onPress={() => navigation.navigate("MyCompletions")}
-      />
-      <View style={{ marginVertical: 10 }} />
-      <Button
-        title="Mind Content Library"
-        onPress={() => navigation.navigate("MindContentLibrary")}
-      />
-    </View>
-  );
+// Example: Mock a login function that might be called from a LoginScreen
+// In a real app, LoginScreen would use useAuth().login(...)
+const performMockLogin = (loginFunction: Function) => {
+  console.log("Performing mock login in App.tsx for demonstration...");
+  setTimeout(() => {
+    const mockUserData = {
+      id: 'logged-in-user-123',
+      display_name: 'Jules The Dev',
+      email: 'jules@example.com',
+    };
+    const mockToken = 'mock-jwt-token-from-login';
+    loginFunction(mockUserData, mockToken);
+    console.log("Mock login complete. User should be set in AuthContext.");
+  }, 2000); // Simulate network delay
 };
 
 
-function App() {
+export default function App() {
+  // This is a bit of a hack for the demo to call login.
+  // In a real app, you'd have a LoginScreen that calls useAuth().login
+  // This `AuthContextConsumer` is only to trigger the login for the example.
+  const AuthContextConsumerForLoginTrigger = () => {
+    const { login, user, isLoading } = useAuth(); // Get login from useAuth
+    React.useEffect(() => {
+      if (!user && !isLoading) { // Only attempt login if no user and not loading
+        // performMockLogin(login); // Temporarily removed to avoid automatic login during tests
+                                // In a real app, a Login Screen would handle this.
+                                // For now, you'd manually call login via a test button or a login screen.
+         console.log("App.tsx: AuthProvider loaded. User not logged in. A LoginScreen would typically handle the login process.");
+      }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user, isLoading]); // Removed login from deps to avoid re-trigger if login fn reference changes
+    return null; // This component doesn't render anything
+  };
+
+
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="MainHome">
-        <Stack.Screen
-          name="MainHome"
-          component={MainHomeScreen}
-          options={{ title: "RealValue Home" }}
-        />
-        <Stack.Screen
-          name="HealthCheck"
-          component={HealthCheckScreen}
-          options={{ title: "Backend Health" }}
-        />
-        <Stack.Screen
-          name="PracticeChallenges"
-          component={PracticeChallengesScreen}
-          options={{ title: "Practice Challenges" }}
-        />
-        <Stack.Screen
-          name="ChallengeAttempt"
-          component={ChallengeAttemptScreen}
-          options={({ route }) => ({
-            title: "Attempt Challenge",
-            // Potentially set title based on route.params.challenge?.title if fetched early
-          })}
-        />
-        <Stack.Screen
-          name="MyCompletions"
-          component={MyCompletionsScreen}
-          options={{ title: "My Completions" }}
-        />
-        <Stack.Screen
-          name="MindContentLibrary"
-          component={MindContentLibraryScreen}
-          options={{ title: "Mind Content Library" }}
-        />
-        <Stack.Screen
-          name="MindContentForm"
-          component={MindContentFormScreen}
-          options={({ route }) => ({
-            title: route.params?.mode === 'edit' ? "Edit Content" : "Suggest Content"
-          })}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <AuthProvider>
+      {/* AuthContextConsumerForLoginTrigger is for demo auto-login, remove in real app */}
+      {/* <AuthContextConsumerForLoginTrigger />  */}
+      <AppNavigator />
+      {/*
+        Inside AppNavigator, or screens, you can now use useAuth().
+        If isLoading from useAuth() is true, you might show a loading spinner
+        instead of AppNavigator.
+        If !isAuthenticated and !isLoading, you might show a LoginNavigator.
+      */}
+    </AuthProvider>
   );
 }
 
-export default App;
+// Minimal useAuth hook directly in App.tsx for the consumer component
+// In real components, they'd import useAuth from AuthContext.tsx
+const useAuth = () => {
+  const context = React.useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
