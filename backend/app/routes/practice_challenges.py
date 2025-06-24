@@ -1,15 +1,15 @@
 # backend/app/routes/practice_challenges.py
 from flask import Blueprint, jsonify, request, g  # noqa: F401
 from datetime import datetime
-from backend.app import db # Import db from backend.app
-from backend.app.models import (
+from .. import db  # Import db from .. (parent directory)
+from ..models import (  # Import models from .. (parent directory)
     PracticeChallengeTemplate,
     UserChallengeCompletion,
     # ChallengeType, # Removed as it's unused
     DifficultyLevel,
     CompletionStatus,
 )
-from backend.app.utils.auth import token_required
+from ..utils.auth import token_required  # Import auth utils from .. (parent directory)
 
 practice_challenges_bp = Blueprint(
     "practice_challenges", __name__, url_prefix="/api/practice_challenges"

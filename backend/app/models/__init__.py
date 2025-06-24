@@ -3,21 +3,42 @@
 # and for Flask-Migrate to detect them.
 
 from .user import User
-from .user_profile import UserProfile # From feat/user-profile-management-basic side
-from .practice_challenge import (    # From main side
+from .user_profile import UserProfile  # From feat/user-profile-management-basic side
+from .practice_challenge import (  # From main side
     PracticeChallengeTemplate,
     UserChallengeCompletion,
     ChallengeType,
     DifficultyLevel,
     CompletionStatus,
 )
+from .journal_entry import JournalEntry
+from .mindset_challenge import (
+    MindsetChallengeTemplate,
+    UserMindsetCompletion,
+    MindsetChallengeFrequency,
+    MindsetCompletionStatus,
+)
+from .mindful_moment import (
+    MindfulMomentTemplate,
+    UserReminderSetting,
+    MindfulMomentReminderFrequency,
+)
+
 
 __all__ = [
     "User",
-    "UserProfile", # From feat/user-profile-management-basic side
-    "PracticeChallengeTemplate", # From main side
-    "UserChallengeCompletion",   # From main side
-    "ChallengeType",             # From main side
-    "DifficultyLevel",           # From main side
-    "CompletionStatus",          # From main side
+    "UserProfile",
+    "PracticeChallengeTemplate",
+    "UserChallengeCompletion",
+    "ChallengeType",
+    "DifficultyLevel",
+    "CompletionStatus",
+    "JournalEntry",
+    "MindsetChallengeTemplate",
+    "UserMindsetCompletion",
+    "MindsetChallengeFrequency",
+    "MindsetCompletionStatus",
+    "MindfulMomentTemplate",
+    "UserReminderSetting",
+    "MindfulMomentReminderFrequency",
 ]

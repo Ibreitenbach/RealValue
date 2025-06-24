@@ -24,7 +24,9 @@ def mock_token_required(f):
 
         # Fetch the user fresh from the current session using the ID
         # Assumes an app context is active here, which Flask tests usually provide for routes.
-        current_user = db.session.get(User, g.current_user_id)  # Use Session.get for PK lookups
+        current_user = db.session.get(
+            User, g.current_user_id
+        )  # Use Session.get for PK lookups
         if not current_user:
             raise RuntimeError(
                 f"mock_token_required: User with id {g.current_user_id} "
@@ -34,7 +36,9 @@ def mock_token_required(f):
         # Store the fetched, session-bound user object in g for the route to use
         g.current_user = current_user
 
-        return f(current_user, *args, **kwargs)  # Pass current_user to the decorated function
+        return f(
+            current_user, *args, **kwargs
+        )  # Pass current_user to the decorated function
 
     return decorated
 

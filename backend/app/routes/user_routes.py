@@ -1,7 +1,7 @@
 # backend/app/routes/user_routes.py
 from flask import Blueprint, jsonify, g  # noqa: F401
-from backend.app.models import UserChallengeCompletion
-from backend.app.utils.auth import token_required
+from ..models import UserChallengeCompletion  # Corrected import
+from ..utils.auth import token_required  # Corrected import
 
 user_bp = Blueprint("user_routes", __name__, url_prefix="/api/users")
 

@@ -33,7 +33,7 @@ class TestPracticeChallengeModels(unittest.TestCase):
         test_user_obj = User(username="testuser", email="test@example.com")
         db.session.add(test_user_obj)
         db.session.commit()
-        self.test_user_id = test_user_obj.id # Store ID
+        self.test_user_id = test_user_obj.id  # Store ID
 
     def test_create_practice_challenge_template(self):
         with self.app.app_context():
@@ -83,7 +83,7 @@ class TestPracticeChallengeModels(unittest.TestCase):
 
     def test_create_user_challenge_completion(self):
         with self.app.app_context():
-            test_user = db.session.get(User, self.test_user_id) # Fetch user
+            test_user = db.session.get(User, self.test_user_id)  # Fetch user
             template = PracticeChallengeTemplate(
                 title="Completion Test Challenge",
                 description="A challenge for testing completion.",
@@ -94,7 +94,7 @@ class TestPracticeChallengeModels(unittest.TestCase):
             db.session.commit()
 
             completion = UserChallengeCompletion(
-                user_id=test_user.id, # Use fetched user's ID
+                user_id=test_user.id,  # Use fetched user's ID
                 challenge_template_id=template.id,
                 status=CompletionStatus.COMPLETED,
                 completed_at=datetime.utcnow(),
@@ -104,7 +104,9 @@ class TestPracticeChallengeModels(unittest.TestCase):
             db.session.commit()
 
             self.assertIsNotNone(completion.id)
-            self.assertEqual(completion.user_id, test_user.id) # Compare with fetched user's ID
+            self.assertEqual(
+                completion.user_id, test_user.id
+            )  # Compare with fetched user's ID
             self.assertEqual(completion.challenge_template_id, template.id)
             self.assertEqual(completion.status, CompletionStatus.COMPLETED)
             self.assertIsNotNone(completion.completed_at)
@@ -115,7 +117,7 @@ class TestPracticeChallengeModels(unittest.TestCase):
 
     def test_user_challenge_completion_to_dict(self):
         with self.app.app_context():
-            test_user = db.session.get(User, self.test_user_id) # Fetch user
+            test_user = db.session.get(User, self.test_user_id)  # Fetch user
             template = PracticeChallengeTemplate(
                 title="Completion Dict Test",
                 description="Testing completion to_dict.",
@@ -127,7 +129,7 @@ class TestPracticeChallengeModels(unittest.TestCase):
 
             dt = datetime.utcnow()
             completion = UserChallengeCompletion(
-                user_id=test_user.id, # Use fetched user's ID
+                user_id=test_user.id,  # Use fetched user's ID
                 challenge_template_id=template.id,
                 status=CompletionStatus.PENDING_REVIEW,
                 completed_at=dt,
@@ -137,7 +139,9 @@ class TestPracticeChallengeModels(unittest.TestCase):
             db.session.commit()  # id is assigned after commit
 
             completion_dict = completion.to_dict()
-            self.assertEqual(completion_dict["user_id"], test_user.id) # Compare with fetched user's ID
+            self.assertEqual(
+                completion_dict["user_id"], test_user.id
+            )  # Compare with fetched user's ID
             self.assertEqual(completion_dict["challenge_template_id"], template.id)
             self.assertEqual(completion_dict["challenge_title"], "Completion Dict Test")
             self.assertEqual(completion_dict["status"], "pending_review")
@@ -147,7 +151,7 @@ class TestPracticeChallengeModels(unittest.TestCase):
 
     def test_relationships(self):
         with self.app.app_context():
-            test_user = db.session.get(User, self.test_user_id) # Fetch user
+            test_user = db.session.get(User, self.test_user_id)  # Fetch user
             template = PracticeChallengeTemplate(
                 title="Relationship Test",
                 description="Testing model relationships.",
@@ -158,7 +162,7 @@ class TestPracticeChallengeModels(unittest.TestCase):
             db.session.commit()
 
             completion = UserChallengeCompletion(
-                user_id=test_user.id, # Use fetched user's ID
+                user_id=test_user.id,  # Use fetched user's ID
                 challenge_template_id=template.id,
                 status=CompletionStatus.COMPLETED,
             )
@@ -168,7 +172,7 @@ class TestPracticeChallengeModels(unittest.TestCase):
             # Test template.completions
             self.assertIn(completion, template.completions)
             # Test completion.user
-            self.assertEqual(completion.user, test_user) # Compare with fetched user
+            self.assertEqual(completion.user, test_user)  # Compare with fetched user
             # Test completion.challenge_template
             self.assertEqual(completion.challenge_template, template)
             # Test user.challenge_completions (backref)
