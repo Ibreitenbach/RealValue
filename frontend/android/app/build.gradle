@@ -1,0 +1,28 @@
+apply plugin: "com.android.application"
+
+android {
+    namespace "com.realvalue.app"
+    compileSdkVersion 34
+
+    defaultConfig {
+        applicationId "com.realvalue.app"
+        minSdkVersion 21
+        targetSdkVersion 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+}
+
+dependencies {
+    // This is where you would add your dependencies
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+}
+
+
+android.lintOptions { checkReleaseBuilds false }

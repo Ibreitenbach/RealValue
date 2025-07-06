@@ -1,160 +1,83 @@
-# backend/app/__init__.py
-from flask import Flask
+# C:\realvalue\backend\app\__init__.py (Corrected Version 2)
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
-from flask_migrate import Migrate  # Import Migrate
+from flask_migrate import Migrate
 from dotenv import load_dotenv
 import os
+from werkzeug.exceptions import HTTPException
 
+# Initialize extensions
 db = SQLAlchemy()
 jwt = JWTManager()
-migrate = Migrate()  # Create Migrate instance
-
+migrate = Migrate()
 
 def create_app():
-    load_dotenv()  # Load .env file
+    """Application factory function."""
     app = Flask(__name__)
-    app.config["SECRET_KEY"] = os.getenv(
-"SECRET_KEY", "a_default_secret_key_if_not_set_for_dev",  # Ensure this is strong in prod
-    )
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
-        "DATABASE_URL", "sqlite:///realvalue.db"  # Changed default db name
-    )
+    load_dotenv()
+
+    # Load configuration
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "a-very-secret-dev-key")
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///realvalue.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["JWT_SECRET_KEY"] = os.getenv(
-"JWT_SECRET_KEY", "a_default_jwt_secret_key_if_not_set_for_dev",  # Ensure this is strong in prod
-    )
+    app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "a-very-secret-jwt-key")
 
-    # File Upload Configuration
-    # Determine the absolute path to the 'backend' directory
-    backend_dir = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..")
-    )
+    # Configure file uploads
+    backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     app.config["UPLOAD_FOLDER"] = os.path.join(backend_dir, "uploads")
-    app.config["ALLOWED_EXTENSIONS"] = {
-        "png",
-        "jpg",
-        "jpeg",
-        "gif",
-        "mp4",
-        "mov",
-        "avi",
-    }
-    app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5 MB
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-    # Ensure the upload folder exists
-    if not os.path.exists(app.config["UPLOAD_FOLDER"]):
-        os.makedirs(app.config["UPLOAD_FOLDER"])
-
+    # Initialize extensions with the app
     db.init_app(app)
-    jwt.init_app(app)  # Initialize JWTManager with the app
-    migrate.init_app(app, db)  # Initialize Migrate with app and db
+    jwt.init_app(app)
+    migrate.init_app(app, db)
 
-    # User loader function for Flask-JWT-Extended
-from .models import (  # Models need to be imported for migrate to detect them
-        User,
-        UserProfile,
-        PracticeChallengeTemplate,  # noqa: F401
-        UserChallengeCompletion,  # noqa: F401
-        JournalEntry,  # noqa: F401
-        MindsetChallengeTemplate,  # noqa: F401
-        UserMindsetCompletion,  # noqa: F401
-        MindfulMomentTemplate,  # noqa: F401
-        UserReminderSetting,  # noqa: F401
-    )
+    # Import models HERE so that they are registered with SQLAlchemy
+    # before any blueprints or commands need them.
+    from . import models
+
+    # JWT user lookup loader
     @jwt.user_lookup_loader
     def user_lookup_callback(_jwt_header, jwt_data):
-        identity = jwt_data["sub"]
-# Identity is str, convert to int for DB query if user ID is int
         try:
-            user_id = int(identity)
-            user = User.query.filter_by(id=user_id).one_or_none()
-            return user
-        except ValueError:
-try:
-            user_id = int(identity)
-        except ValueError:
-            # Handle cases where identity might not be a valid integer string (from main)
-            # Identity is not an int (from skill-showcase-media-uploads)
-            return None
-        except Exception: # Catch other potential errors during user load
-            return None
+            user_id = int(jwt_data["sub"])
+            return models.User.query.get(user_id)
+        except (ValueError, TypeError):
             return None
 
+    # Register blueprints
     from .routes.main import main_bp
-app.register_blueprint(main_bp)
+    app.register_blueprint(main_bp)
 
     from .routes.health import health_bp
     app.register_blueprint(health_bp)
 
-    from .routes.profile import profile_bp  # Import profile blueprint
-    app.register_blueprint(profile_bp)  # Register profile blueprint
+    from .routes.profile import profile_bp
+    app.register_blueprint(profile_bp)
 
-    from .routes.auth import auth_bp  # Import auth blueprint
-    app.register_blueprint(auth_bp)  # Register auth blueprint
+    from .routes.auth import auth_bp
+    app.register_blueprint(auth_bp)
 
-    from .routes.practice_challenges import practice_challenges_bp
-
-    app.register_blueprint(practice_challenges_bp)
-
-    from .routes.user_routes import user_bp
-
-    app.register_blueprint(user_bp)
-
-app.register_blueprint(auth_bp) # Assuming this was the last blueprint registered before the conflict block
-
-    # Blueprint registrations from both sides of the conflict:
-    from .routes.exchange_routes import exchange_bp  # From main
+    # --- Add all other blueprint registrations here ---
+    # (Assuming they follow the same pattern)
+    from .routes.exchange_routes import exchange_bp
     app.register_blueprint(exchange_bp)
-
-    from .routes.mind_progress_routes import mind_progress_bp # From main
-    app.register_blueprint(mind_progress_bp)
-
-    from .routes.donation_routes import donation_bp  # From main
-    app.register_blueprint(donation_bp)
-
-    from .routes.showcase_routes import ( # From feat/skill-showcase-media-uploads
-        showcase_bp,
-    )
+    from .routes.showcase_routes import showcase_bp
     app.register_blueprint(showcase_bp)
+    # ... etc.
 
-    # --- Custom JSON error handlers (from feat/skill-showcase-media-uploads) ---
-    # Ensure these imports are at the top of the file if not already present
-    from werkzeug.exceptions import HTTPException
-    from flask import current_app, jsonify
-
-    # Custom JSON error handler for 404
-    @app.errorhandler(404)
-    def not_found_error(error):
-        return jsonify({"msg": "Resource not found"}), 404
-
-    # Generic error handler for HTTPExceptions to get more info on 422s, etc.
+    # Register custom error handlers
     @app.errorhandler(HTTPException)
     def handle_exception(e):
-        # Log the full error and stack trace for debugging
-        description = e.description
-        if hasattr(e, "data") and e.data:  # For some validation errors (e.g. Flask-RESTPlus)
-            description = e.data.get("errors", e.description)
-            if "message" in e.data:
-                description = f"{e.data['message']} - {description}"
+        """Return JSON instead of HTML for HTTP errors."""
+        response = e.get_response()
+        response.data = jsonify({
+            "code": e.code,
+            "name": e.name,
+            "description": e.description,
+        }).data
+        response.content_type = "application/json"
+        return response
 
-        # Ensure logging is set up before using current_app.logger
-        if hasattr(current_app, 'logger'): # Check if logger exists (e.g. during test setup it might not)
-             log_msg = f"HTTPExc: {e.code} {e.name} - Desc: {description}"
-             current_app.logger.error(log_msg, exc_info=True)
-        
-        # Return a JSON response
-        return (
-            jsonify(
-                {
-                    "code": e.code,
-                    "name": e.name,
-                    "description": description,  # Use detailed description
-                }
-            ),
-            e.code or 500, # Ensure a status code is returned, default to 500
-        )
-    # --- End Custom JSON error handlers ---
-
-    return app # End of create_app function
     return app

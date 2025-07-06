@@ -1,0 +1,10 @@
+{
+  "read_project_build_gradle_corrected": {
+    "role": "FileSystem",
+    "action": "read_file",
+    "parameters": {
+      "path": "C:\\realvalue\\frontend\\android\\app\\build.gradle"
+    },
+    "outputs_to_context": "project_build_gradle_content"
+  }
+}
