@@ -29,7 +29,11 @@ jobs:
 
     - name: Install frontend dependencies
       working-directory: ./frontend
-      run: yarn install --frozen-lockfile
+      run: yarn check || yarn install --check-files --frozen-lockfile
+
+    - name: Check gradlew version
+      working-directory: ./frontend/android
+      run: ./gradlew --version
 
     - name: Clean Android build cache
       working-directory: ./frontend/android
@@ -64,6 +68,12 @@ jobs:
           fi
         fi
         echo "Attempted to remove problematic Gradle configurations and ensure app module inclusion."
+
+    - name: Show settings.gradle after edit
+      run: |
+        echo "--- Contents of frontend/android/settings.gradle after modification ---"
+        cat frontend/android/settings.gradle
+        echo "--------------------------------------------------------------------"
 
     - name: Bundle React Native Assets
       working-directory: ./frontend
@@ -104,3 +114,27 @@ jobs:
             find ~/.gradle/daemon -name "*.log" -print0 | xargs -0 tail -n 100 || true
         fi
         echo "End of detailed logs."
+
+    - name: Capture Gradle Console Output on Failure
+      if: failure()
+      run: |
+        echo "--------------------------------------------------------------------"
+        echo "Gradle build failed. Showing critical Gradle files and daemon logs:"
+        echo "--- frontend/android/build.gradle (last 100 lines) ---"
+        tail -n 100 frontend/android/build.gradle || true
+        echo "--- frontend/android/app/build.gradle (last 100 lines) ---"
+        tail -n 100 frontend/android/app/build.gradle || true
+        echo "--- frontend/android/settings.gradle (last 100 lines) ---"
+        tail -n 100 frontend/android/settings.gradle || true
+        echo "--- frontend/android/gradle.properties (last 100 lines) ---"
+        tail -n 100 frontend/android/gradle.properties || true
+        echo "--- Gradle Daemon Logs (last 100 lines from each) ---"
+        if [ -d ~/.gradle/daemon ]; then
+          find ~/.gradle/daemon -name "daemon-*.log" -print0 | while IFS= read -r -d $'\0' file; do
+            echo "---- Log: $file ----"
+            tail -n 100 "$file" || true
+          done
+        else
+          echo "Gradle daemon directory not found."
+        fi
+        echo "--------------------------------------------------------------------"
