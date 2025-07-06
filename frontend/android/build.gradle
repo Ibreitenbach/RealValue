@@ -13,8 +13,8 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        // Updated Android Gradle Plugin version for compatibility with Gradle 8.7
-        classpath("com.android.tools.build:gradle:8.7.0")
+        // Updated Android Gradle Plugin version for compatibility with Gradle 8.9
+        classpath("com.android.tools.build:gradle:8.9.0")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
