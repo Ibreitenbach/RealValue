@@ -1,77 +1,31 @@
-apply plugin: "com.android.application"
-apply plugin: "kotlin-android" // Ensure Kotlin plugin is applied if using Kotlin
-
-android {
-    namespace "com.realvalue.app"
-    compileSdkVersion rootProject.ext.compileSdkVersion
-    ndkVersion rootProject.ext.ndkVersion // Added NDK version reference
-
-    defaultConfig {
-        applicationId "com.realvalue.app"
-        minSdkVersion rootProject.ext.minSdkVersion // Use rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion // Use rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
-
-        // Add testInstrumentationRunner if not present
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    ext {
+        buildToolsVersion = "34.0.0"
+        minSdkVersion = 21
+        compileSdkVersion = 34
+        targetSdkVersion = 34
+        ndkVersion = "25.2.9519653" // Added NDK version
+        kotlinVersion = "1.8.0"
     }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
-        }
+    repositories {
+        google()
+        mavenCentral()
     }
-
-    // Add packagingOptions for React Native
-    packagingOptions {
-        pickFirst "**/libc++_shared.so"
-        pickFirst "**/libreact_render_component_view.so"
-        pickFirst "**/libreact_render_component_text.so"
-        pickFirst "**/libreact_render_component_image.so"
-        pickFirst "**/libreact_render_component_scrollview.so"
-        pickFirst "**/libreact_render_component_progressbar.so"
-        pickFirst "**/libreact_render_component_textinput.so"
-        pickFirst "**/libreact_render_core.so"
-        pickFirst "**/libreact_render_debug.so"
-        pickFirst "**/libreact_render_graphics.so"
-        pickFirst "**/libreact_render_scheduler.so"
-        pickFirst "**/libreact_render_template.so"
-        pickFirst "**/libreact_render_uimanager.so"
-        pickFirst "**/libreact_render_utils.so"
-        pickFirst "**/libreact_render_yoga.so"
-    }
-
-    // Add sourceSets for React Native
-    sourceSets {
-        main {
-            java.srcDirs = ["src/main/java"]
-            // Add React Native generated code path
-            java.srcDirs += [
-                "build/generated/rn/src/main/java"
-            ]
-        }
+    dependencies {
+        // Updated Android Gradle Plugin version for compatibility with Gradle 8.14.3
+        classpath("com.android.tools.build:gradle:8.4.2") // Updated to 8.4.2
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
 
-dependencies {
-    // Standard AndroidX dependencies
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'com.google.android.material:material:1.12.0' // Example Material Design library
-
-    // React Native dependencies - specifying exact stable versions
-    implementation "com.facebook.react:react-native:0.72.6" // Changed from '0.72.7' to '0.72.6'
-    implementation "com.facebook.react:hermes-engine:0.72.6" // Changed from '0.72.7' to '0.72.6'
-    implementation "com.facebook.react:react-native-codegen:0.72.6" // Changed from '0.72.7' to '0.72.6'
-
-    // Ensure kotlinVersion is defined in your project's build.gradle
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
-
-    // If you have native modules, their dependencies would go here.
-    // Example: implementation project(':react-native-some-module')
+allprojects {
+    repositories {
+        mavenCentral()
+        google()
+        maven { url 'https://www.jitpack.io' }
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+        // IMPORTANT: Add the local React Native Maven repository
+        maven { url "$rootDir/../node_modules/react-native/android" } // This line is crucial
+    }
 }
-
-// Ensure this is at the very end of the file
-apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle");
