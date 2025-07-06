@@ -1,5 +1,4 @@
 name: React Native Android APK Build
-
 on:
   push:
     branches:
@@ -9,7 +8,6 @@ on:
 jobs:
   build_android:
     runs-on: ubuntu-latest # Use a fresh Ubuntu environment provided by GitHub
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -33,7 +31,8 @@ jobs:
         NODE_PATH: ./node_modules # Explicitly set NODE_PATH for resolution
 
     - name: Clean Android build cache
-      run: cd frontend/android./gradlew clean
+      # Corrected command: Directly call gradlew from its path and use --project-dir
+      run: ./frontend/android/gradlew clean --project-dir frontend/android
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
