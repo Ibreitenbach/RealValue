@@ -3,12 +3,12 @@ name: React Native Android APK Build
 on:
   push:
     branches:
-      - main
-  workflow_dispatch:
+      - main # Trigger on pushes to the main branch
+  workflow_dispatch: # Allows manual triggering from the GitHub Actions tab
 
 jobs:
   build_android:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # Use a fresh Ubuntu environment provided by GitHub
 
     steps:
     - name: Checkout code
@@ -17,23 +17,23 @@ jobs:
     - name: Set up Node.js (using Node 18 LTS for broader compatibility)
       uses: actions/setup-node@v4
       with:
-        node-version: '18' # Changed to Node.js 18 (LTS)
-        cache: 'yarn'
-        cache-dependency-path: frontend/yarn.lock
+        node-version: '18'
+        cache: 'yarn' # Cache yarn dependencies
+        cache-dependency-path: frontend/yarn.lock # Explicitly tell where yarn.lock is for caching
 
     - name: Aggressive Clean Node Modules & Install with Yarn
-      # Perform an even deeper clean of node_modules and reinstall
+      # Aggressively remove node_modules and yarn.lock, then clean Yarn cache and reinstall
       run: |
         cd frontend
-        # Remove all node_modules related caches and yarn artifacts
-        rm -rf node_modules yarn.lock .yarn .pnp.cjs .pnp.js .pnp.*
-        yarn cache clean --all # Clear global Yarn cache
-        yarn install --frozen-lockfile # Reinstall dependencies
+        rm -rf node_modules yarn.lock # Remove node_modules and yarn.lock
+        npm cache clean --force # Clear npm's global cache
+        yarn cache clean --all # Clean yarn cache
+        yarn install --frozen-lockfile # Use yarn to install, --frozen-lockfile ensures reproducibility
       env:
-        # Explicitly set NODE_PATH for resolution, even with current directory
-        NODE_PATH: ./node_modules
+        NODE_PATH: ./node_modules # Explicitly set NODE_PATH for resolution
 
     - name: Clean Android build cache
+      # Cleans the Android build directories to ensure fresh linking
       run: |
         cd frontend/android
         bash ./gradlew clean --project-dir .
@@ -43,29 +43,35 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: 'gradle'
+        cache: 'gradle' # Cache Gradle dependencies for faster builds
 
     - name: Grant execute permission to gradlew
+      # Use a more aggressive chmod to ensure execute permissions for all
       run: chmod 777 frontend/android/gradlew
 
     - name: Verify gradlew file type and permissions
+      # Displays file type (e.g., "Bourne-Again shell script") and permissions
       run: |
         file frontend/android/gradlew
         ls -l frontend/android/gradlew
 
     - name: Remove problematic org.gradle.java.home if present
       run: |
+            # Check for gradle.properties at project root and remove/comment out org.gradle.java.home
             if [ -f gradle.properties ]; then
               sed -i '/^org\.gradle\.java\.home=/d' gradle.properties
             fi
+            # Check for gradle.properties in frontend/android directory and remove/comment out org.gradle.java.home
             if [ -f frontend/android/gradle.properties ]; then
               sed -i '/^org\.gradle\.java\.home=/d' frontend/android/gradle.properties
             fi
             echo "Attempted to remove org.gradle.java.home from gradle.properties files."
 
     - name: Bundle React Native Assets
+      # This step explicitly bundles JS assets into the Android project's assets folder
       run: |
         cd frontend
+        mkdir -p android/app/src/main/assets # Create the assets directory before bundling
         yarn react-native bundle \
           --platform android \
           --dev false \
@@ -73,11 +79,11 @@ jobs:
           --bundle-output android/app/src/main/assets/index.android.bundle \
           --assets-dest android/app/src/main/res
       env:
-        NODE_PATH: ./node_modules # Ensure NODE_PATH is set for this step
-        # Sometimes needed for Metro to find assets in CI/headless environments
+        NODE_PATH: ./node_modules # Re-set NODE_PATH for this step as well
         REACT_NATIVE_PACKAGER_HOSTNAME: localhost
 
     - name: Build Debug APK
+      # Gradle will now attempt to pick up React Native libraries after npm install and bundling
       run: |
         cd frontend/android
         bash ./gradlew assembleDebug \
