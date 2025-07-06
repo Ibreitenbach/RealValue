@@ -1,140 +1,48 @@
-name: React Native Android APK Build
-on:
-  push:
-    branches:
-      - main # Trigger on pushes to the main branch
-  workflow_dispatch: # Allows manual triggering from the GitHub Actions tab
+The job failed during the Gradle build step, specifically at the :app:compileDebugJavaWithJavac task. The logs do not show a concrete Java compilation error, but there are some key hints:
 
-jobs:
-  build_android:
-    runs-on: ubuntu-latest # Use a fresh Ubuntu environment provided by GitHub
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+The build reports directory frontend/android/app/build/reports does not exist, so no detailed error report was printed.
+The logs repeatedly show BUILD FAILED and reference the Gradle daemon logs, but no direct cause like a missing symbol or syntax error is reported.
+This usually indicates one of the following common issues:
 
-    - name: Grant execute permission to gradlew
-      run: chmod +x frontend/android/gradlew
+Missing or misconfigured files: Ensure that all required source files exist and are referenced correctly in your build.gradle files.
+Dependency or configuration error: If you recently changed dependencies or Gradle configuration, a misconfiguration could cause the compile task to fail without a specific error shown here.
+File system or permissions issue: The build cannot create or access frontend/android/app/build/reports, which might indicate a permissions problem or a missing folder.
+Solution Steps
+1. Print Full Compilation Output
+Modify your workflow to run Gradle with increased verbosity to capture the real error. Change your build step to:
 
-    - name: Verify gradlew file type and permissions
-      run: |
-        file frontend/android/gradlew
-        ls -l frontend/android/gradlew
+YAML
+- name: Build with Gradle
+  run: ./gradlew assembleDebug --stacktrace --info
+This will give a more specific error message.
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'yarn'
-        cache-dependency-path: frontend/yarn.lock
+2. Ensure Reports Directory Exists
+Add a step to create the build reports directory before the build step:
 
-    - name: Install frontend dependencies
-      working-directory: ./frontend
-      run: yarn install --frozen-lockfile
+YAML
+- name: Ensure build reports directory exists
+  run: mkdir -p frontend/android/app/build/reports
+3. Review Recent Changes
+Check for any changes to:
 
-    - name: Check gradlew version
-      working-directory: ./frontend/android
-      run: ./gradlew --version
+build.gradle files,
+gradle.properties,
+Java/Kotlin source files.
+If you find any, revert or fix as needed.
 
-    - name: Clean Android build cache
-      working-directory: ./frontend/android
-      run: ./gradlew :app:clean --stacktrace --info --debug --warning-mode=all
+4. Validate Java Compatibility
+The build uses Java 17. Ensure your dependencies and plugins are compatible with Java 17. If not, set the Java version to 11 in your workflow and local configuration.
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: 'gradle' # Cache Gradle dependencies for faster builds
+5. Clean and Rebuild
+Sometimes, old build artifacts can cause issues. Add a clean step:
 
-    - name: Remove problematic Gradle configurations and ensure app module inclusion
-      # This step now also removes the rootProject.name and ensures 'include :app' in frontend/android/settings.gradle
-      run: |
-        # Check for gradle.properties at project root and remove/comment out org.gradle.java.home
-        if [ -f gradle.properties ]; then
-          sed -i '/^org\.gradle\.java\.home=/d' gradle.properties
-        fi
-        # Check for gradle.properties in frontend/android directory and remove/comment out org.gradle.java.home
-        if [ -f frontend/android/gradle.properties ]; then
-          sed -i '/^org\.gradle\.java\.home=/d' frontend/android/gradle.properties
-        fi
-        # IMPORTANT: Remove rootProject.name from frontend/android/settings.gradle
-        # This line can cause conflicts if frontend/android is meant to be a subproject
-        if [ -f frontend/android/settings.gradle ]; then
-          sed -i '/^rootProject\.name=/d' frontend/android/settings.gradle
-          # Ensure 'include ':app'' is present in settings.gradle
-          if ! grep -q "include ':app'" frontend/android/settings.gradle; then
-            echo "include ':app'" >> frontend/android/settings.gradle
-            echo "Added 'include ':app'' to frontend/android/settings.gradle"
-          fi
-        fi
-        echo "Attempted to remove problematic Gradle configurations and ensure app module inclusion."
+sh
+./gradlew clean
+./gradlew assembleDebug --stacktrace --info
+Next steps:
 
-    - name: Show settings.gradle after edit
-      run: |
-        echo "--- Contents of frontend/android/settings.gradle after modification ---"
-        cat frontend/android/settings.gradle
-        echo "--------------------------------------------------------------------"
+Make the changes above to your workflow and project.
+Rerun the build to capture the real error message.
+If the problem persists, share the new error output. This will help pinpoint the root cause for a specific code or configuration fix.
 
-    - name: Bundle React Native Assets
-      working-directory: ./frontend
-      run: |
-        mkdir -p android/app/src/main/assets # Create the assets directory before bundling
-        yarn react-native bundle \
-          --platform android \
-          --dev false \
-          --entry-file index.js \
-          --bundle-output android/app/src/main/assets/index.android.bundle \
-          --assets-dest android/app/src/main/res
-
-    - name: Build Debug APK
-      working-directory: ./frontend/android
-      run: |
-        bash ./gradlew :app:assembleDebug \
-          -DreactNativeDebug=true \
-          -Dvariant=debug \
-          -Dgradle.properties.exclude=org.gradle.java.home \
-          --stacktrace --info --debug --warning-mode=all
-
-    - name: Upload Debug APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: debug-apk
-        path: frontend/android/app/build/outputs/apk/debug/app-debug.apk
-
-    - name: Print detailed log on failure
-      if: failure() # This step will ONLY run if a previous step in the job fails
-      run: |
-        echo "Build failed. Attempting to print detailed logs from build reports..."
-        # Find all log files that might be generated by Gradle/AAPT
-        find frontend/android/app/build/reports -name "*.log" -print0 | xargs -0 tail -n 500 || true
-        find frontend/android/app/build/tmp -name "*.log" -print0 | xargs -0 tail -n 500 || true
-        # Also check common Gradle daemon log location relative to runner HOME
-        if [ -d ~/.gradle/daemon ]; then
-            echo "--- Gradle Daemon Logs (~/.gradle/daemon) ---"
-            find ~/.gradle/daemon -name "*.log" -print0 | xargs -0 tail -n 100 || true
-        fi
-        echo "End of detailed logs."
-
-    - name: Capture Gradle Console Output on Failure
-      if: failure()
-      run: |
-        echo "--------------------------------------------------------------------"
-        echo "Gradle build failed. Showing critical Gradle files and daemon logs:"
-        echo "--- frontend/android/build.gradle (last 100 lines) ---"
-        tail -n 100 frontend/android/build.gradle || true
-        echo "--- frontend/android/app/build.gradle (last 100 lines) ---"
-        tail -n 100 frontend/android/app/build.gradle || true
-        echo "--- frontend/android/settings.gradle (last 100 lines) ---"
-        tail -n 100 frontend/android/settings.gradle || true
-        echo "--- frontend/android/gradle.properties (last 100 lines) ---"
-        tail -n 100 frontend/android/gradle.properties || true
-        echo "--- Gradle Daemon Logs (last 100 lines from each) ---"
-        if [ -d ~/.gradle/daemon ]; then
-          find ~/.gradle/daemon -name "daemon-*.log" -print0 | while IFS= read -r -d $'\0' file; do
-            echo "---- Log: $file ----"
-            tail -n 100 "$file" || true
-          done
-        else
-          echo "Gradle daemon directory not found."
-        fi
-        echo "--------------------------------------------------------------------"
+How can I help you?
