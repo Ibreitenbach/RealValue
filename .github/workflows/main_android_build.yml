@@ -33,10 +33,10 @@ jobs:
         NODE_PATH: ./node_modules # Explicitly set NODE_PATH for resolution
 
     - name: Clean Android build cache
-      # Change directory to frontend/android, then run clean directly on the Android project
+      # Change directory to frontend/android, then run clean with --settings-file
       run: |
         cd frontend/android
-        bash ./gradlew clean # No :app: prefix, as this is now the effective root
+        bash ./gradlew clean --settings-file settings.gradle # <--- NEW: specify settings.gradle
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -61,7 +61,6 @@ jobs:
             if [ -f gradle.properties ]; then
               sed -i '/^org\.gradle\.java\.home=/d' gradle.properties
             fi
-            # Check for gradle.properties in frontend/android directory and remove/comment out org.gradle.java.home
             if [ -f frontend/android/gradle.properties ]; then
               sed -i '/^org\.gradle\.java\.home=/d' frontend/android/gradle.properties
             fi
@@ -83,13 +82,14 @@ jobs:
         REACT_NATIVE_PACKAGER_HOSTNAME: localhost # Sometimes needed for Metro in CI
 
     - name: Build Debug APK
-      # Change directory to frontend/android, then run assembleDebug
+      # Change directory to frontend/android, then run assembleDebug with --settings-file
       run: |
         cd frontend/android
-        bash ./gradlew assembleDebug \ # No :app: prefix, as this is now the effective root
+        bash ./gradlew assembleDebug \
+          --settings-file settings.gradle \ # <--- NEW: specify settings.gradle
           -DreactNativeDebug=true \
           -Dvariant=debug \
-          -DreactNativeAndroidRoot=../ \ # Now relative to frontend/android, so ../ points to frontend/
+          -DreactNativeAndroidRoot=../ \ # Relative to frontend/android
           -Dgradle.properties.exclude=org.gradle.java.home \
           --stacktrace --info --warning-mode=all # Added --warning-mode=all
 
