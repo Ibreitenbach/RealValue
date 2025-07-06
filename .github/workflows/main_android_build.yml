@@ -34,10 +34,7 @@ jobs:
 
     - name: Clean Android build cache
       # Run clean, specifying the android directory as the project root
-      run: bash ./frontend/android/gradlew clean --project-dir frontend/android # Removed :app: prefix, explicit --project-dir
-      # Also add --settings-file explicitly if --project-dir is not enough:
-      # run: bash ./frontend/android/gradlew clean --project-dir frontend/android --settings-file frontend/android/settings.gradle
-
+      run: bash ./frontend/android/gradlew clean --project-dir frontend/android # Use --project-dir, no cd
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
