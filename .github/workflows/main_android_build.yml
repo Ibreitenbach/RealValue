@@ -33,10 +33,11 @@ jobs:
         NODE_PATH: ./node_modules # Explicitly set NODE_PATH for resolution
 
     - name: Clean Android build cache
-      # Change directory to frontend/android, then run clean with --settings-file
-      run: |
-        cd frontend/android
-        bash ./gradlew clean --settings-file settings.gradle # <--- NEW: specify settings.gradle
+      # Run clean, specifying the android directory as the project root
+      run: bash ./frontend/android/gradlew clean --project-dir frontend/android # Removed :app: prefix, explicit --project-dir
+      # Also add --settings-file explicitly if --project-dir is not enough:
+      # run: bash ./frontend/android/gradlew clean --project-dir frontend/android --settings-file frontend/android/settings.gradle
+
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -61,6 +62,7 @@ jobs:
             if [ -f gradle.properties ]; then
               sed -i '/^org\.gradle\.java\.home=/d' gradle.properties
             fi
+            # Check for gradle.properties in frontend/android directory and remove/comment out org.gradle.java.home
             if [ -f frontend/android/gradle.properties ]; then
               sed -i '/^org\.gradle\.java\.home=/d' frontend/android/gradle.properties
             fi
@@ -82,14 +84,12 @@ jobs:
         REACT_NATIVE_PACKAGER_HOSTNAME: localhost # Sometimes needed for Metro in CI
 
     - name: Build Debug APK
-      # Change directory to frontend/android, then run assembleDebug with --settings-file
-      run: |
-        cd frontend/android
-        bash ./gradlew assembleDebug \
-          --settings-file settings.gradle \ # <--- NEW: specify settings.gradle
+      # Run assembleDebug, specifying the android directory as the project root
+      run: bash ./frontend/android/gradlew assembleDebug \
+          --project-dir frontend/android \ # Explicitly specify project root for gradlew
           -DreactNativeDebug=true \
           -Dvariant=debug \
-          -DreactNativeAndroidRoot=../ \ # Relative to frontend/android
+          -DreactNativeAndroidRoot=frontend/ \ # Path to RN root relative to *overall* project root
           -Dgradle.properties.exclude=org.gradle.java.home \
           --stacktrace --info --warning-mode=all # Added --warning-mode=all
 
