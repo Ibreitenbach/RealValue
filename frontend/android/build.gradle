@@ -19,10 +19,12 @@ buildscript {
     }
 }
 
+// In your frontend/android/build.gradle
 allprojects {
     repositories {
         mavenCentral()
         google()
-        maven { url 'https://www.jitpack.io' } // Add this line
+        maven { url 'https://www.jitpack.io' }
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' } // Add this line
     }
 }
