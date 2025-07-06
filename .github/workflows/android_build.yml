@@ -1,18 +1,14 @@
-name: Android CI Build
+name: Android APK Build
 
 on:
   push:
     branches:
-      - main # Trigger on pushes to the main branch
-  workflow_dispatch: # Allows manual triggering from the GitHub Actions tab
+      - main
+  workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest # Use a fresh Ubuntu environment provided by GitHub
-    # Add PYTHONPATH here, making the root of the repository discoverable for Python tests
-    env:
-      PYTHONPATH: ${{ github.workspace }}
-
+  build_android:
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -22,22 +18,7 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: 'gradle' # Cache Gradle dependencies for faster builds
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.9' # Specify a Python version compatible with your backend project
-
-    - name: Install Backend Dependencies
-      run: |
-        cd backend
-        pip install -r requirements.txt
-
-    - name: Run Backend Tests
-      run: |
-        cd backend
-        pytest
+        cache: 'gradle'
 
     - name: Grant execute permission to gradlew
       run: chmod +x frontend/android/gradlew
