@@ -27,7 +27,7 @@ jobs:
       # Cleans the Android build directories to ensure fresh linking
       run: |
         cd frontend/android
-        ./gradlew clean --project-dir .
+        bash ./gradlew clean --project-dir . # Explicitly run gradlew with bash
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -54,13 +54,13 @@ jobs:
             fi
             # Check for gradle.properties in frontend/android directory and remove/comment out org.gradle.java.home
             if [ -f frontend/android/gradle.properties ]; then
-              sed -i '/^org\.gradle\.java\.home=/d' frontend/android/gradle.properties # Corrected path here
+              sed -i '/^org\.gradle\.java\.home=/d' frontend/android/gradle.properties
             fi
             echo "Attempted to remove org.gradle.java.home from gradle.properties files."
 
     - name: Build Debug APK
       # Gradle will now attempt to pick up React Native libraries after npm install
-      run: ./frontend/android/gradlew assembleDebug --project-dir frontend/android
+      run: bash ./frontend/android/gradlew assembleDebug --project-dir frontend/android # Explicitly run gradlew with bash
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
