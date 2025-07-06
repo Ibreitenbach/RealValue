@@ -62,10 +62,10 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'com.google.android.material:material:1.12.0' // Example Material Design library
 
-    // React Native dependencies - specifying exact versions
-    implementation "com.facebook.react:react-native:0.73.0" // Changed from '+' to '0.73.0'
-    implementation "com.facebook.react:hermes-engine:0.73.0" // Changed from '+' to '0.73.0'
-    implementation "com.facebook.react:react-native-codegen:0.73.0" // Codegen for new architecture
+    // React Native dependencies - specifying exact stable versions
+    implementation "com.facebook.react:react-native:0.72.7" // Changed from '0.73.0' to '0.72.7'
+    implementation "com.facebook.react:hermes-engine:0.72.7" // Changed from '0.73.0' to '0.72.7'
+    implementation "com.facebook.react:react-native-codegen:0.72.7" // Changed from '0.73.0' to '0.72.7'
 
     // Ensure kotlinVersion is defined in your project's build.gradle
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
