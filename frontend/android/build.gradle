@@ -14,7 +14,7 @@ buildscript {
     }
     dependencies {
         // Updated Android Gradle Plugin version for compatibility with Gradle 8.9
-        classpath("com.android.tools.build:gradle:8.14.0")
+        classpath("com.android.tools.build:gradle:8.14.3")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
