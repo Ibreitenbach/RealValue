@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest # Use a fresh Ubuntu environment provided by GitHub
+    # Add PYTHONPATH here, making the root of the repository discoverable for Python tests
+    env:
+      PYTHONPATH: ${{ github.workspace }}
 
     steps:
     - name: Checkout code
@@ -21,22 +24,29 @@ jobs:
         distribution: 'temurin'
         cache: 'gradle' # Cache Gradle dependencies for faster builds
 
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9' # Specify a Python version compatible with your backend project
+
+    - name: Install Backend Dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+
+    - name: Run Backend Tests
+      run: |
+        cd backend
+        pytest
+
     - name: Grant execute permission to gradlew
       run: chmod +x frontend/android/gradlew
 
     - name: Build Debug APK
       run: ./frontend/android/gradlew assembleDebug
-      env:
-        # Add any necessary environment variables for your build here, if any
-        # For example, if your build needs ANDROID_SDK_ROOT set specifically:
-        # ANDROID_SDK_ROOT: ${{ github.workspace }}/.android/sdk
-        # However, for most projects, setup-java and gradlew handle SDK location.
-        # This project likely handles SDK location fine without explicit setting here, as you have gradlew.
-        # So, no extra env vars are likely needed here.
-        # If build fails, we might need to revisit this.
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
       with:
         name: debug-apk
-        path: frontend/android/app/build/outputs/apk/debug/app-debug.apk # Adjust path if your APK is elsewhere
+        path: frontend/android/app/build/outputs/apk/debug/app-debug.apk
