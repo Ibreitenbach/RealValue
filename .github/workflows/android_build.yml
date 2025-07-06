@@ -21,9 +21,11 @@ jobs:
         cache: 'npm' # Cache npm dependencies
 
     - name: Install Frontend (React Native) Dependencies
-      run: cd frontend && npm install # Correctly navigates to frontend for npm install
+      # Navigate to the frontend directory and install npm packages
+      run: cd frontend && npm install
 
     - name: Clean Android build cache (React Native specific)
+      # Cleans the Android build directories to ensure fresh linking
       run: |
         cd frontend/android
         bash ./gradlew clean --project-dir .
@@ -36,25 +38,35 @@ jobs:
         cache: 'gradle' # Cache Gradle dependencies for faster builds
 
     - name: Grant execute permission to gradlew
+      # Use a more aggressive chmod to ensure execute permissions for all
       run: chmod 777 frontend/android/gradlew
 
     - name: Verify gradlew file type and permissions
+      # Displays file type (e.g., "Bourne-Again shell script") and permissions
       run: |
         file frontend/android/gradlew
         ls -l frontend/android/gradlew
 
     - name: Remove problematic org.gradle.java.home if present
       run: |
+            # Check for gradle.properties at project root and remove/comment out org.gradle.java.home
             if [ -f gradle.properties ]; then
               sed -i '/^org\.gradle\.java\.home=/d' gradle.properties
             fi
+            # Check for gradle.properties in frontend/android directory and remove/comment out org.gradle.java.home
             if [ -f frontend/android/gradle.properties ]; then
               sed -i '/^org\.gradle\.java\.home=/d' frontend/android/gradle.properties
             fi
             echo "Attempted to remove org.gradle.java.home from gradle.properties files."
 
+    - name: Bundle React Native Assets
+      # This step explicitly bundles JS assets into the Android project's assets folder
+      run: |
+        cd frontend
+        npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
+
     - name: Build Debug APK
-      # Crucial: Specify REACT_NATIVE_ROOT and use Gradle's internal bundling
+      # Gradle will now attempt to pick up React Native libraries after npm install and bundling
       run: |
         cd frontend/android
         bash ./gradlew assembleDebug \
@@ -63,9 +75,6 @@ jobs:
           -DreactNativeAndroidRoot=../ \
           -Dgradle.properties.exclude=org.gradle.java.home \
           --stacktrace --info
-      # Removed --project-dir from the call as we are now cd'ing into frontend/android
-      # Explicitly setting reactNativeAndroidRoot to '..' relative to the Android project.
-      # Added -Dgradle.properties.exclude to ensure problematic properties are truly ignored.
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
