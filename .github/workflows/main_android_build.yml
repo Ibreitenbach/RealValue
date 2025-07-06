@@ -33,10 +33,10 @@ jobs:
         NODE_PATH: ./node_modules # Explicitly set NODE_PATH for resolution
 
     - name: Clean Android build cache
-      # Change directory to frontend/android, then run clean on the :app subproject
+      # Change directory to frontend/android, then run clean directly on the Android project
       run: |
         cd frontend/android
-        bash ./gradlew :app:clean # No --project-dir needed here, as we are in the correct directory
+        bash ./gradlew clean # No :app: prefix, as this is now the effective root
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -46,7 +46,7 @@ jobs:
         cache: 'gradle' # Cache Gradle dependencies for faster builds
 
     - name: Grant execute permission to gradlew
-      # chmod the gradlew script
+      # Grant permissions to gradlew in its location
       run: chmod 777 frontend/android/gradlew
 
     - name: Verify gradlew file type and permissions
@@ -57,9 +57,11 @@ jobs:
 
     - name: Remove problematic org.gradle.java.home if present
       run: |
+            # Check for gradle.properties at project root and remove/comment out org.gradle.java.home
             if [ -f gradle.properties ]; then
               sed -i '/^org\.gradle\.java\.home=/d' gradle.properties
             fi
+            # Check for gradle.properties in frontend/android directory and remove/comment out org.gradle.java.home
             if [ -f frontend/android/gradle.properties ]; then
               sed -i '/^org\.gradle\.java\.home=/d' frontend/android/gradle.properties
             fi
@@ -81,10 +83,10 @@ jobs:
         REACT_NATIVE_PACKAGER_HOSTNAME: localhost # Sometimes needed for Metro in CI
 
     - name: Build Debug APK
-      # Change directory to frontend/android, then run assembleDebug on the :app subproject
+      # Change directory to frontend/android, then run assembleDebug
       run: |
         cd frontend/android
-        bash ./gradlew :app:assembleDebug \
+        bash ./gradlew assembleDebug \ # No :app: prefix, as this is now the effective root
           -DreactNativeDebug=true \
           -Dvariant=debug \
           -DreactNativeAndroidRoot=../ \ # Now relative to frontend/android, so ../ points to frontend/
