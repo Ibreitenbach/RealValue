@@ -33,8 +33,7 @@ jobs:
         NODE_PATH: ./node_modules # Explicitly set NODE_PATH for resolution
 
     - name: Clean Android build cache
-      # Run clean, specifying the android directory as the project root
-      run: bash ./frontend/android/gradlew clean --project-dir frontend/android # Use --project-dir, no cd
+      run: bash ./frontend/android/gradlew clean --project-dir frontend/android --stacktrace --info
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
