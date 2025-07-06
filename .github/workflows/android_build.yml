@@ -14,6 +14,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20' # Use a modern stable Node.js version, like 20 or 22
+        cache: 'npm' # Cache npm dependencies
+
+    - name: Install Frontend (React Native) Dependencies
+      run: cd frontend && npm install # Corrected path for package.json in frontend/
+
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
@@ -29,15 +38,15 @@ jobs:
 
     - name: Remove problematic org.gradle.java.home if present
       run: |
-        # Check for gradle.properties at project root and remove/comment out org.gradle.java.home
-        if [ -f gradle.properties ]; then
-          sed -i '/^org\.gradle\.java\.home=/d' gradle.properties
-        fi
-        # Check for gradle.properties in frontend/android directory and remove/comment out org.gradle.java.home
-        if [ -f frontend/android/gradle.properties ]; then
-          sed -i '/^org\.gradle\.java\.home=/d' frontend/android/gradle.properties
-        fi
-        echo "Attempted to remove org.gradle.java.home from gradle.properties files."
+            # Check for gradle.properties at project root and remove/comment out org.gradle.java.home
+            if [ -f gradle.properties ]; then
+              sed -i '/^org\.gradle\.java\.home=/d' gradle.properties
+            fi
+            # Check for gradle.properties in frontend/android directory and remove/comment out org.gradle.java.home
+            if [ -f frontend/android/gradle.properties ]; then
+              sed -i '/^org\.gradle\.java\.home=/d' frontend/android/gradle.properties # Corrected path here
+            fi
+            echo "Attempted to remove org.gradle.java.home from gradle.properties files."
 
     - name: Build Debug APK
       run: ./frontend/android/gradlew assembleDebug --project-dir frontend/android
