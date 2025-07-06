@@ -14,22 +14,24 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Node.js
+    - name: Set up Node.js (using Node 18 LTS for broader compatibility)
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
-        cache: 'yarn' # Changed cache to yarn
+        node-version: '18' # Changed to Node.js 18 (LTS)
+        cache: 'yarn'
+        cache-dependency-path: frontend/yarn.lock
 
-    - name: Clean and Install Frontend (React Native) Dependencies with Yarn
-      # Aggressively remove node_modules and yarn.lock, then clean Yarn cache and reinstall
+    - name: Aggressive Clean Node Modules & Install with Yarn
+      # Perform an even deeper clean of node_modules and reinstall
       run: |
         cd frontend
-        rm -rf node_modules yarn.lock # Remove node_modules and yarn.lock
-        npm cache clean --force # Still good to clean npm cache just in case
-        yarn cache clean --all # Clean yarn cache
-        yarn install --frozen-lockfile # Use yarn to install, --frozen-lockfile ensures reproducibility
+        # Remove all node_modules related caches and yarn artifacts
+        rm -rf node_modules yarn.lock .yarn .pnp.cjs .pnp.js .pnp.*
+        yarn cache clean --all # Clear global Yarn cache
+        yarn install --frozen-lockfile # Reinstall dependencies
       env:
-        NODE_PATH: ./node_modules # Explicitly set NODE_PATH for resolution
+        # Explicitly set NODE_PATH for resolution, even with current directory
+        NODE_PATH: ./node_modules
 
     - name: Clean Android build cache
       run: |
@@ -62,12 +64,18 @@ jobs:
             echo "Attempted to remove org.gradle.java.home from gradle.properties files."
 
     - name: Bundle React Native Assets
-      # Explicitly bundle JS assets using yarn's npx equivalent
       run: |
         cd frontend
-        yarn react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
+        yarn react-native bundle \
+          --platform android \
+          --dev false \
+          --entry-file index.js \
+          --bundle-output android/app/src/main/assets/index.android.bundle \
+          --assets-dest android/app/src/main/res
       env:
-        NODE_PATH: ./node_modules
+        NODE_PATH: ./node_modules # Ensure NODE_PATH is set for this step
+        # Sometimes needed for Metro to find assets in CI/headless environments
+        REACT_NATIVE_PACKAGER_HOSTNAME: localhost
 
     - name: Build Debug APK
       run: |
