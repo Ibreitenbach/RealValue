@@ -42,8 +42,10 @@ jobs:
         NODE_PATH: ./node_modules # Explicitly set NODE_PATH for resolution
 
     - name: Clean Android build cache
-      # Corrected command: Directly call gradlew from its path and use --project-dir
-      run: ./frontend/android/gradlew clean --project-dir frontend/android
+      # Change directory to frontend/android and then run gradlew clean
+      run: |
+        cd frontend/android
+        ./gradlew clean
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -80,13 +82,12 @@ jobs:
         REACT_NATIVE_PACKAGER_HOSTNAME: localhost # Sometimes needed for Metro in CI
 
     - name: Build Debug APK
-      # Run assembleDebug, specifying the android directory as the project root
+      # Change directory to frontend/android and then run assembleDebug
       run: |
-        bash ./frontend/android/gradlew assembleDebug \
-          --project-dir frontend/android \
+        cd frontend/android
+        bash ./gradlew assembleDebug \
           -DreactNativeDebug=true \
           -Dvariant=debug \
-          -DreactNativeAndroidRoot=frontend/ \
           -Dgradle.properties.exclude=org.gradle.java.home \
           --stacktrace --info --warning-mode=all
 
