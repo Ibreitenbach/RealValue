@@ -18,18 +18,18 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
-        cache: 'npm'
+        cache: 'yarn' # Changed cache to yarn
 
-    - name: Install Frontend (React Native) Dependencies
-      # Set NODE_PATH to explicitly include node_modules for resolution
-      # Aggressively remove node_modules and package-lock.json for a clean install
+    - name: Clean and Install Frontend (React Native) Dependencies with Yarn
+      # Aggressively remove node_modules and yarn.lock, then clean Yarn cache and reinstall
       run: |
         cd frontend
-        rm -rf node_modules package-lock.json
-        npm cache clean --force
-        npm install --force
+        rm -rf node_modules yarn.lock # Remove node_modules and yarn.lock
+        npm cache clean --force # Still good to clean npm cache just in case
+        yarn cache clean --all # Clean yarn cache
+        yarn install --frozen-lockfile # Use yarn to install, --frozen-lockfile ensures reproducibility
       env:
-        NODE_PATH: ./node_modules # Explicitly set NODE_PATH relative to frontend/
+        NODE_PATH: ./node_modules # Explicitly set NODE_PATH for resolution
 
     - name: Clean Android build cache
       run: |
@@ -62,14 +62,11 @@ jobs:
             echo "Attempted to remove org.gradle.java.home from gradle.properties files."
 
     - name: Bundle React Native Assets
-      # Explicitly bundle JS assets into the Android project's assets folder
-      # Ensure npx command uses absolute paths or is run from the correct directory
+      # Explicitly bundle JS assets using yarn's npx equivalent
       run: |
         cd frontend
-        # Running from node_modules/.bin to be explicit about npx path
-        ./node_modules/.bin/react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
+        yarn react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
       env:
-        # Re-set NODE_PATH for this step as well, or ensure it's inherited from job level
         NODE_PATH: ./node_modules
 
     - name: Build Debug APK
