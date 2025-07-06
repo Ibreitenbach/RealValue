@@ -45,7 +45,7 @@ jobs:
       # Change directory to frontend/android and then run gradlew clean for the :app module
       run: |
         cd frontend/android
-        ./gradlew :app:clean
+        ./gradlew :app:clean --stacktrace --info --debug --warning-mode=all
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -54,8 +54,8 @@ jobs:
         distribution: 'temurin'
         cache: 'gradle' # Cache Gradle dependencies for faster builds
 
-    - name: Remove problematic Gradle configurations
-      # This step now also removes the rootProject.name from frontend/android/settings.gradle
+    - name: Remove problematic Gradle configurations and ensure app module inclusion
+      # This step now also removes the rootProject.name and ensures 'include :app' in frontend/android/settings.gradle
       run: |
         # Check for gradle.properties at project root and remove/comment out org.gradle.java.home
         if [ -f gradle.properties ]; then
@@ -69,8 +69,13 @@ jobs:
         # This line can cause conflicts if frontend/android is meant to be a subproject
         if [ -f frontend/android/settings.gradle ]; then
           sed -i '/^rootProject\.name=/d' frontend/android/settings.gradle
+          # Ensure 'include ':app'' is present in settings.gradle
+          if ! grep -q "include ':app'" frontend/android/settings.gradle; then
+            echo "include ':app'" >> frontend/android/settings.gradle
+            echo "Added 'include ':app'' to frontend/android/settings.gradle"
+          fi
         fi
-        echo "Attempted to remove problematic Gradle configurations."
+        echo "Attempted to remove problematic Gradle configurations and ensure app module inclusion."
 
     - name: Bundle React Native Assets
       # This step explicitly bundles JS assets into the Android project's assets folder
@@ -95,7 +100,7 @@ jobs:
           -DreactNativeDebug=true \
           -Dvariant=debug \
           -Dgradle.properties.exclude=org.gradle.java.home \
-          --stacktrace --info --warning-mode=all
+          --stacktrace --info --debug --warning-mode=all
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
