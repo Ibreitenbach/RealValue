@@ -3,12 +3,12 @@ name: React Native Android APK Build
 on:
   push:
     branches:
-      - main # Trigger on pushes to the main branch
-  workflow_dispatch: # Allows manual triggering from the GitHub Actions tab
+      - main
+  workflow_dispatch:
 
 jobs:
   build_android:
-    runs-on: ubuntu-latest # Use a fresh Ubuntu environment provided by GitHub
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
@@ -17,22 +17,23 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20' # Use a modern stable Node.js version, like 20 or 22
-        cache: 'npm' # Cache npm dependencies
+        node-version: '20'
+        cache: 'npm'
 
     - name: Install Frontend (React Native) Dependencies
+      # Set NODE_PATH to explicitly include node_modules for resolution
+      # Aggressively remove node_modules and package-lock.json for a clean install
       run: |
         cd frontend
-        # Aggressively remove node_modules and package-lock.json for a clean install
         rm -rf node_modules package-lock.json
-        npm cache clean --force # Clear npm's global cache
-        npm install --force # Force a fresh installation
-        # Also install cocoapods if this were an iOS build, but not needed for Android
+        npm cache clean --force
+        npm install --force
+      env:
+        NODE_PATH: ./node_modules # Explicitly set NODE_PATH relative to frontend/
 
     - name: Clean Android build cache
       run: |
         cd frontend/android
-        # Explicitly run gradlew clean for a fresh Android build cache
         bash ./gradlew clean --project-dir .
 
     - name: Set up JDK 17
@@ -52,20 +53,24 @@ jobs:
 
     - name: Remove problematic org.gradle.java.home if present
       run: |
-            # Check for gradle.properties at project root and remove/comment out org.gradle.java.home
             if [ -f gradle.properties ]; then
               sed -i '/^org\.gradle\.java\.home=/d' gradle.properties
             fi
-            # Check for gradle.properties in frontend/android directory and remove/comment out org.gradle.java.home
             if [ -f frontend/android/gradle.properties ]; then
               sed -i '/^org\.gradle\.java\.home=/d' frontend/android/gradle.properties
             fi
             echo "Attempted to remove org.gradle.java.home from gradle.properties files."
 
     - name: Bundle React Native Assets
+      # Explicitly bundle JS assets into the Android project's assets folder
+      # Ensure npx command uses absolute paths or is run from the correct directory
       run: |
         cd frontend
-        npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
+        # Running from node_modules/.bin to be explicit about npx path
+        ./node_modules/.bin/react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
+      env:
+        # Re-set NODE_PATH for this step as well, or ensure it's inherited from job level
+        NODE_PATH: ./node_modules
 
     - name: Build Debug APK
       run: |
