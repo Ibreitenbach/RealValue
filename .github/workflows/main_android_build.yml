@@ -61,10 +61,10 @@ jobs:
       # Removed 'cd' and ':app:' prefix, using --project-dir for explicit path
       run: ./frontend/android/gradlew clean --project-dir frontend/android --stacktrace --info --debug --warning-mode=all
 
-    - name: Set up JDK 11 # Changed from JDK 17 to 11 for broader compatibility
+    - name: Set up JDK 17 # Changed back to JDK 17 as required by Android Gradle Plugin
       uses: actions/setup-java@v4
       with:
-        java-version: '11' # Changed to 11
+        java-version: '17' # Changed to 17
         distribution: 'temurin'
         cache: 'gradle' # Cache Gradle dependencies for faster builds
 
@@ -116,6 +116,12 @@ jobs:
           -Dvariant=debug \
           -Dgradle.properties.exclude=org.gradle.java.home \
           --stacktrace --info --debug --warning-mode=all
+
+    - name: Upload Debug APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: debug-apk
+        path: frontend/android/app/build/outputs/apk/debug/app-debug.apk
 
     - name: Print full Gradle and Java compiler logs on failure
       if: failure() # This step will ONLY run if a previous step in the job fails
