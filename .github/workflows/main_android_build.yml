@@ -12,40 +12,28 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Moved these steps earlier to ensure permissions are set before gradlew is called
     - name: Grant execute permission to gradlew
-      # Grant permissions to gradlew in its location
-      run: chmod 777 frontend/android/gradlew
+      run: chmod +x frontend/android/gradlew
 
     - name: Verify gradlew file type and permissions
-      # Displays file type (e.g., "Bourne-Again shell script") and permissions
       run: |
         file frontend/android/gradlew
         ls -l frontend/android/gradlew
 
-    - name: Set up Node.js (using Node 18 LTS for broader compatibility)
+    - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'yarn' # Cache yarn dependencies
-        cache-dependency-path: frontend/yarn.lock # Explicitly tell where yarn.lock is for caching
+        cache: 'yarn'
+        cache-dependency-path: frontend/yarn.lock
 
-    - name: Aggressive Clean Node Modules & Install with Yarn
-      # Aggressively remove node_modules and yarn.lock, then clean Yarn cache and reinstall
-      run: |
-        cd frontend
-        rm -rf node_modules yarn.lock # Remove node_modules and yarn.lock
-        npm cache clean --force # Clear npm's global cache
-        yarn cache clean --all # Clean yarn cache
-        yarn install --frozen-lockfile # Use yarn to install, --frozen-lockfile ensures reproducibility
-      env:
-        NODE_PATH: ./node_modules # Explicitly set NODE_PATH for resolution
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: yarn install --frozen-lockfile
 
     - name: Clean Android build cache
-      # Change directory to frontend/android and then run gradlew clean for the :app module
-      run: |
-        cd frontend/android
-        ./gradlew :app:clean --stacktrace --info --debug --warning-mode=all
+      working-directory: ./frontend/android
+      run: ./gradlew :app:clean --stacktrace --info --debug --warning-mode=all
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -78,9 +66,8 @@ jobs:
         echo "Attempted to remove problematic Gradle configurations and ensure app module inclusion."
 
     - name: Bundle React Native Assets
-      # This step explicitly bundles JS assets into the Android project's assets folder
+      working-directory: ./frontend
       run: |
-        cd frontend
         mkdir -p android/app/src/main/assets # Create the assets directory before bundling
         yarn react-native bundle \
           --platform android \
@@ -88,14 +75,10 @@ jobs:
           --entry-file index.js \
           --bundle-output android/app/src/main/assets/index.android.bundle \
           --assets-dest android/app/src/main/res
-      env:
-        NODE_PATH: ./node_modules # Re-set NODE_PATH for this step as well
-        REACT_NATIVE_PACKAGER_HOSTNAME: localhost # Sometimes needed for Metro in CI
 
     - name: Build Debug APK
-      # Change directory to frontend/android and then run assembleDebug for the :app module
+      working-directory: ./frontend/android
       run: |
-        cd frontend/android
         bash ./gradlew :app:assembleDebug \
           -DreactNativeDebug=true \
           -Dvariant=debug \
