@@ -3,12 +3,13 @@ name: Android APK Build
 on:
   push:
     branches:
-      - main
-  workflow_dispatch:
+      - main # Trigger on pushes to the main branch
+  workflow_dispatch: # Allows manual triggering from the GitHub Actions tab
 
 jobs:
   build_android:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # Use a fresh Ubuntu environment provided by GitHub
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -18,13 +19,16 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: 'gradle'
+        cache: 'gradle' # Cache Gradle dependencies for faster builds
 
     - name: Grant execute permission to gradlew
       run: chmod +x frontend/android/gradlew
 
+    - name: Verify gradlew existence and permissions
+      run: ls -l frontend/android/gradlew # Diagnostic step
+
     - name: Build Debug APK
-      run: ./frontend/android/gradlew assembleDebug
+      run: ./frontend/android/gradlew assembleDebug # Corrected and singular build step
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
