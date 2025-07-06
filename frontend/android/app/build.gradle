@@ -2,7 +2,8 @@ apply plugin: "com.android.application"
 
 android {
     namespace "com.realvalue.app"
-    compileSdkVersion 34
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    ndkVersion rootProject.ext.ndkVersion // Added NDK version reference
 
     defaultConfig {
         applicationId "com.realvalue.app"
@@ -22,6 +23,7 @@ android {
 dependencies {
     // This is where you would add your dependencies
     implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion" // Ensure kotlinVersion is defined in your project's build.gradle
 }
 
 
