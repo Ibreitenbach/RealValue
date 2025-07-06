@@ -55,15 +55,15 @@ jobs:
 
     - name: Remove problematic org.gradle.java.home if present
       run: |
-            # Check for gradle.properties at project root and remove/comment out org.gradle.java.home
-            if [ -f gradle.properties ]; then
-              sed -i '/^org\.gradle\.java\.home=/d' gradle.properties
-            fi
-            # Check for gradle.properties in frontend/android directory and remove/comment out org.gradle.java.home
-            if [ -f frontend/android/gradle.properties ]; then
-              sed -i '/^org\.gradle\.java\.home=/d' frontend/android/gradle.properties
-            fi
-            echo "Attempted to remove org.gradle.java.home from gradle.properties files."
+        # Check for gradle.properties at project root and remove/comment out org.gradle.java.home
+        if [ -f gradle.properties ]; then
+          sed -i '/^org\.gradle\.java\.home=/d' gradle.properties
+        fi
+        # Check for gradle.properties in frontend/android directory and remove/comment out org.gradle.java.home
+        if [ -f frontend/android/gradle.properties ]; then
+          sed -i '/^org\.gradle\.java\.home=/d' frontend/android/gradle.properties
+        fi
+        echo "Attempted to remove org.gradle.java.home from gradle.properties files."
 
     - name: Bundle React Native Assets
       # This step explicitly bundles JS assets into the Android project's assets folder
@@ -82,13 +82,14 @@ jobs:
 
     - name: Build Debug APK
       # Run assembleDebug, specifying the android directory as the project root
-      run: bash ./frontend/android/gradlew assembleDebug \
-          --project-dir frontend/android \ # Explicitly specify project root for gradlew
+      run: |
+        bash ./frontend/android/gradlew assembleDebug \
+          --project-dir frontend/android \
           -DreactNativeDebug=true \
           -Dvariant=debug \
-          -DreactNativeAndroidRoot=frontend/ \ # Path to RN root relative to *overall* project root
+          -DreactNativeAndroidRoot=frontend/ \
           -Dgradle.properties.exclude=org.gradle.java.home \
-          --stacktrace --info --warning-mode=all # Added --warning-mode=all
+          --stacktrace --info --warning-mode=all
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
