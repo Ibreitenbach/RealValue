@@ -28,7 +28,7 @@ jobs:
       run: ls -l frontend/android/gradlew # Diagnostic step
 
     - name: Build Debug APK
-      run: ./frontend/android/gradlew assembleDebug # Corrected and singular build step
+      run: ./frontend/android/gradlew assembleDebug --project-dir frontend/android
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
