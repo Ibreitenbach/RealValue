@@ -37,10 +37,14 @@ jobs:
         cache: 'gradle' # Cache Gradle dependencies for faster builds
 
     - name: Grant execute permission to gradlew
-      run: chmod +x frontend/android/gradlew
+      # Use a more aggressive chmod to ensure execute permissions for all
+      run: chmod 777 frontend/android/gradlew
 
-    - name: Verify gradlew existence and permissions
-      run: ls -l frontend/android/gradlew # Diagnostic step
+    - name: Verify gradlew file type and permissions
+      # Displays file type (e.g., "Bourne-Again shell script") and permissions
+      run: |
+        file frontend/android/gradlew
+        ls -l frontend/android/gradlew
 
     - name: Remove problematic org.gradle.java.home if present
       run: |
@@ -53,16 +57,6 @@ jobs:
               sed -i '/^org\.gradle\.java\.home=/d' frontend/android/gradle.properties # Corrected path here
             fi
             echo "Attempted to remove org.gradle.java.home from gradle.properties files."
-
-    - name: Bundle React Native Assets (Optional, often done by Gradle)
-      # This step explicitly bundles JS assets, sometimes required if Gradle doesn't trigger it automatically
-      # Note: This might not be strictly necessary if assembleDebug triggers bundling internally.
-      # We will enable this if the build still fails after the initial clean and standard build attempt.
-      run: |
-        echo "Skipping explicit JS bundling for now, let Gradle handle it."
-        # If needed, uncomment the following line and adjust path:
-        # cd frontend && npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
-      # This step is commented out to allow assembleDebug to try its default bundling first.
 
     - name: Build Debug APK
       # Gradle will now attempt to pick up React Native libraries after npm install
