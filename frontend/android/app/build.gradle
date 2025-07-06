@@ -1,4 +1,5 @@
 apply plugin: "com.android.application"
+apply plugin: "kotlin-android" // Ensure Kotlin plugin is applied if using Kotlin
 
 android {
     namespace "com.realvalue.app"
@@ -7,24 +8,71 @@ android {
 
     defaultConfig {
         applicationId "com.realvalue.app"
-        minSdkVersion 21
-        targetSdkVersion 34
+        minSdkVersion rootProject.ext.minSdkVersion // Use rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion // Use rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+
+        // Add testInstrumentationRunner if not present
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
             minifyEnabled false
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+    }
+
+    // Add packagingOptions for React Native
+    packagingOptions {
+        pickFirst "**/libc++_shared.so"
+        pickFirst "**/libreact_render_component_view.so"
+        pickFirst "**/libreact_render_component_text.so"
+        pickFirst "**/libreact_render_component_image.so"
+        pickFirst "**/libreact_render_component_scrollview.so"
+        pickFirst "**/libreact_render_component_progressbar.so"
+        pickFirst "**/libreact_render_component_textinput.so"
+        pickFirst "**/libreact_render_component_view_manager.so"
+        pickFirst "**/libreact_render_core.so"
+        pickFirst "**/libreact_render_debug.so"
+        pickFirst "**/libreact_render_graphics.so"
+        pickFirst "**/libreact_render_scheduler.so"
+        pickFirst "**/libreact_render_template.so"
+        pickFirst "**/libreact_render_uimanager.so"
+        pickFirst "**/libreact_render_utils.so"
+        pickFirst "**/libreact_render_yoga.so"
+    }
+
+    // Add sourceSets for React Native
+    sourceSets {
+        main {
+            java.srcDirs = ["src/main/java"]
+            // Add React Native generated code path
+            java.srcDirs += [
+                "build/generated/rn/src/main/java"
+            ]
         }
     }
 }
 
 dependencies {
-    // This is where you would add your dependencies
+    // Standard AndroidX dependencies
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion" // Ensure kotlinVersion is defined in your project's build.gradle
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.google.android.material:material:1.12.0' // Example Material Design library
+
+    // React Native dependencies
+    implementation "com.facebook.react:react-native:+" // This pulls the latest React Native AAR
+    implementation "com.facebook.react:hermes-engine:+" // Hermes engine for better performance
+    implementation "com.facebook.react:react-native-codegen:0.73.0" // Codegen for new architecture
+
+    // Ensure kotlinVersion is defined in your project's build.gradle
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+
+    // If you have native modules, their dependencies would go here.
+    // Example: implementation project(':react-native-some-module')
 }
 
-
-android.lintOptions { checkReleaseBuilds false }
+// Ensure this is at the very end of the file
+apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle");
