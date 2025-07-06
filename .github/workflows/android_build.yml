@@ -24,10 +24,9 @@ jobs:
       run: cd frontend && npm install # Correctly navigates to frontend for npm install
 
     - name: Clean Android build cache (React Native specific)
-      # Cleans the Android build directories to ensure fresh linking
       run: |
         cd frontend/android
-        bash ./gradlew clean --project-dir . # Explicitly run gradlew with bash
+        bash ./gradlew clean --project-dir .
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -37,30 +36,36 @@ jobs:
         cache: 'gradle' # Cache Gradle dependencies for faster builds
 
     - name: Grant execute permission to gradlew
-      # Use a more aggressive chmod to ensure execute permissions for all
       run: chmod 777 frontend/android/gradlew
 
     - name: Verify gradlew file type and permissions
-      # Displays file type (e.g., "Bourne-Again shell script") and permissions
       run: |
         file frontend/android/gradlew
         ls -l frontend/android/gradlew
 
     - name: Remove problematic org.gradle.java.home if present
       run: |
-            # Check for gradle.properties at project root and remove/comment out org.gradle.java.home
             if [ -f gradle.properties ]; then
               sed -i '/^org\.gradle\.java\.home=/d' gradle.properties
             fi
-            # Check for gradle.properties in frontend/android directory and remove/comment out org.gradle.java.home
             if [ -f frontend/android/gradle.properties ]; then
               sed -i '/^org\.gradle\.java\.home=/d' frontend/android/gradle.properties
             fi
             echo "Attempted to remove org.gradle.java.home from gradle.properties files."
 
     - name: Build Debug APK
-      # Gradle will now attempt to pick up React Native libraries after npm install
-      run: bash ./frontend/android/gradlew assembleDebug --project-dir frontend/android # Explicitly run gradlew with bash
+      # Crucial: Specify REACT_NATIVE_ROOT and use Gradle's internal bundling
+      run: |
+        cd frontend/android
+        bash ./gradlew assembleDebug \
+          -DreactNativeDebug=true \
+          -Dvariant=debug \
+          -DreactNativeAndroidRoot=../ \
+          -Dgradle.properties.exclude=org.gradle.java.home \
+          --stacktrace --info
+      # Removed --project-dir from the call as we are now cd'ing into frontend/android
+      # Explicitly setting reactNativeAndroidRoot to '..' relative to the Android project.
+      # Added -Dgradle.properties.exclude to ensure problematic properties are truly ignored.
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
