@@ -33,7 +33,6 @@ android {
         pickFirst "**/libreact_render_component_scrollview.so"
         pickFirst "**/libreact_render_component_progressbar.so"
         pickFirst "**/libreact_render_component_textinput.so"
-        pickFirst "**/libreact_render_component_view_manager.so"
         pickFirst "**/libreact_render_core.so"
         pickFirst "**/libreact_render_debug.so"
         pickFirst "**/libreact_render_graphics.so"
@@ -63,9 +62,9 @@ dependencies {
     implementation 'com.google.android.material:material:1.12.0' // Example Material Design library
 
     // React Native dependencies - specifying exact stable versions
-    implementation "com.facebook.react:react-native:0.72.7" // Changed from '0.73.0' to '0.72.7'
-    implementation "com.facebook.react:hermes-engine:0.72.7" // Changed from '0.73.0' to '0.72.7'
-    implementation "com.facebook.react:react-native-codegen:0.72.7" // Changed from '0.73.0' to '0.72.7'
+    implementation "com.facebook.react:react-native:0.72.6" // Changed from '0.72.7' to '0.72.6'
+    implementation "com.facebook.react:hermes-engine:0.72.6" // Changed from '0.72.7' to '0.72.6'
+    implementation "com.facebook.react:react-native-codegen:0.72.6" // Changed from '0.72.7' to '0.72.6'
 
     // Ensure kotlinVersion is defined in your project's build.gradle
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
