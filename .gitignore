@@ -673,3 +673,6 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/node,python,macos,windows,linux,visualstudiocode,pycharm,intellij+all,webstorm+all,react,angular
+
+# Android specific
+frontend/android/local.properties

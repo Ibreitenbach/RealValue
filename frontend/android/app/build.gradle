@@ -1,28 +1,31 @@
-apply plugin: "com.android.application"
-
-android {
-    namespace "com.realvalue.app"
-    compileSdkVersion 34
-
-    defaultConfig {
-        applicationId "com.realvalue.app"
-        minSdkVersion 21
-        targetSdkVersion 34
-        versionCode 1
-        versionName "1.0"
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    ext {
+        buildToolsVersion = "34.0.0"
+        minSdkVersion = 21
+        compileSdkVersion = 34
+        targetSdkVersion = 34
+        ndkVersion = "25.2.9519653" // Added NDK version
+        kotlinVersion = "1.8.0"
     }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-        }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        // Updated Android Gradle Plugin version for compatibility with Gradle 8.14.3
+        classpath("com.android.tools.build:gradle:8.4.2") // Updated to 8.4.2
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
 
-dependencies {
-    // This is where you would add your dependencies
-    implementation 'androidx.appcompat:appcompat:1.6.1'
+allprojects {
+    repositories {
+        mavenCentral()
+        google()
+        maven { url 'https://www.jitpack.io' }
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+        // IMPORTANT: Add the local React Native Maven repository
+        maven { url "$rootDir/../node_modules/react-native/android" } // This line is crucial
+    }
 }
-
-
-android.lintOptions { checkReleaseBuilds false }
