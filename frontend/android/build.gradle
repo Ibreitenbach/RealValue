@@ -22,11 +22,12 @@ buildscript {
 allprojects {
     repositories {
         // Prioritize React Native's official Maven repository
-        maven { url "https://maven.pkg.github.com/react-native/maven" } // This is the official RN Maven URL
-        maven { url "$rootDir/../node_modules/react-native/android" } // Local React Native Maven repository
+        maven { url = "https://maven.pkg.github.com/react-native/maven" } // Corrected syntax
+        // Prioritize local React Native Maven repository
+        maven { url = "$rootDir/../node_modules/react-native/android" } // Corrected syntax
         mavenCentral()
         google()
-        maven { url 'https://www.jitpack.io' }
-        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+        maven { url = 'https://www.jitpack.io' } // Corrected syntax
+        maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/' } // Corrected syntax
     }
 }
