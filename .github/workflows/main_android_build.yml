@@ -57,8 +57,9 @@ jobs:
       run: mkdir -p frontend/android/app/build/reports
 
     - name: Clean Android build cache
-      # Explicitly tell Gradle where the settings file is located
-      run: ./frontend/android/gradlew clean --settings-file frontend/android/settings.gradle --stacktrace --info --debug --warning-mode=all
+      # Use working-directory to set the project root, remove --settings-file
+      run: ./gradlew clean --stacktrace --info --debug --warning-mode=all
+      working-directory: frontend/android # Set working directory for this step
 
     - name: Set up JDK 17 # Changed back to JDK 17 as required by Android Gradle Plugin
       uses: actions/setup-java@v4
@@ -106,14 +107,14 @@ jobs:
         REACT_NATIVE_PACKAGER_HOSTNAME: localhost # Sometimes needed for Metro in CI
 
     - name: Build Debug APK
-      # Explicitly tell Gradle where the settings file is located
+      # Use working-directory to set the project root, remove --settings-file
       run: |
-        bash ./frontend/android/gradlew assembleDebug \
-          --settings-file frontend/android/settings.gradle \
+        bash ./gradlew assembleDebug \
           -DreactNativeDebug=true \
           -Dvariant=debug \
           -Dgradle.properties.exclude=org.gradle.java.home \
           --stacktrace --info --debug --warning-mode=all
+      working-directory: frontend/android # Set working directory for this step
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
