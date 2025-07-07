@@ -21,10 +21,9 @@ buildscript {
 
 allprojects {
     repositories {
-        // Prioritize local React Native Maven repository
-        maven { url "$rootDir/../node_modules/react-native/android" } // Moved to top
-        // Add React Native's official Maven repository
-        maven { url "https://www.maven.org/snapshots" } // React Native specific Maven URL
+        // Prioritize React Native's official Maven repository
+        maven { url "https://maven.pkg.github.com/react-native/maven" } // This is the official RN Maven URL
+        maven { url "$rootDir/../node_modules/react-native/android" } // Local React Native Maven repository
         mavenCentral()
         google()
         maven { url 'https://www.jitpack.io' }
