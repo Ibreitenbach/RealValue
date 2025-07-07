@@ -17,10 +17,9 @@ buildscript {
         mavenCentral() // Maven Central for most general Java/Kotlin libraries
         
         // Add other necessary repositories for buildscript dependencies if needed
-        // For example, if some build plugins are on JitPack or Sonatype
         maven { url = 'https://www.jitpack.io' }
         maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/' }
-        jcenter() // Deprecated, but sometimes needed for very old buildscript dependencies (as a last resort)
+        // jcenter() is removed as it is deprecated and often empty
     }
     dependencies {
         // Updated Android Gradle Plugin version for compatibility with Gradle 8.14.3
@@ -31,7 +30,7 @@ buildscript {
 
 allprojects {
     repositories {
-        // These repositories are for your project's runtime/compile dependencies
+        // Prioritize comprehensive Google repositories
         google() // Google's Maven repository for AndroidX, Google Play Services, etc.
         maven { url = "https://dl.google.com/dl/android/maven2/" } // Explicit Google Maven
         maven { url = "https://maven.google.com" } // Another common Google repository
@@ -44,7 +43,7 @@ allprojects {
 
         // Other common repositories
         maven { url = 'https://www.jitpack.io' } // Common for some community libraries
-        maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/' } // For snapshot versions
-        jcenter() // Deprecated, but sometimes needed for very old dependencies (as a last resort)
+        maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/' }
+        // jcenter() is removed as it is deprecated and often empty
     }
 }
