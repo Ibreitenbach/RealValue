@@ -9,8 +9,8 @@ buildscript {
         kotlinVersion = "1.9.20" // Updated Kotlin version to 1.9.20
     }
     repositories {
-        google()
-        mavenCentral()
+        google() // Google's Maven repository for AndroidX, Google Play Services, etc.
+        mavenCentral() // Maven Central for most general Java/Kotlin libraries
     }
     dependencies {
         // Updated Android Gradle Plugin version for compatibility with Gradle 8.14.3
@@ -21,11 +21,14 @@ buildscript {
 
 allprojects {
     repositories {
-        // Standard and most common repositories first
+        // Prioritize comprehensive Google repositories
         google() // Google's Maven repository for AndroidX, Google Play Services, etc.
+        maven { url = "https://dl.google.com/dl/android/maven2/" } // Explicit Google Maven
+        maven { url = "https://maven.google.com" } // Another common Google repository
+
         mavenCentral() // Maven Central for most general Java/Kotlin libraries
 
-        // React Native specific repositories (order might vary, but keep them high)
+        // React Native specific repositories
         maven { url = "https://maven.pkg.github.com/react-native/maven" } // Official RN Maven URL
         maven { url = "$rootDir/../node_modules/react-native/android" } // Local React Native Maven repository
 
