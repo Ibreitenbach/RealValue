@@ -6,7 +6,7 @@ buildscript {
         compileSdkVersion = 34
         targetSdkVersion = 34
         ndkVersion = "25.2.9519653" // Added NDK version
-        kotlinVersion = "1.8.0"
+        kotlinVersion = "1.9.20" // Updated Kotlin version to 1.9.20
     }
     repositories {
         google()
@@ -21,12 +21,17 @@ buildscript {
 
 allprojects {
     repositories {
-        // Prioritize React Native's official Maven repository
-        maven { url "https://maven.pkg.github.com/react-native/maven" } // This is the official RN Maven URL
-        maven { url "$rootDir/../node_modules/react-native/android" } // Local React Native Maven repository
-        mavenCentral()
-        google()
-        maven { url 'https://www.jitpack.io' }
-        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+        // Standard and most common repositories first
+        google() // Google's Maven repository for AndroidX, Google Play Services, etc.
+        mavenCentral() // Maven Central for most general Java/Kotlin libraries
+
+        // React Native specific repositories (order might vary, but keep them high)
+        maven { url = "https://maven.pkg.github.com/react-native/maven" } // Official RN Maven URL
+        maven { url = "$rootDir/../node_modules/react-native/android" } // Local React Native Maven repository
+
+        // Other common repositories
+        maven { url = 'https://www.jitpack.io' } // Common for some community libraries
+        maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/' } // For snapshot versions
+        jcenter() // Deprecated, but sometimes needed for very old dependencies (as a last resort)
     }
 }
