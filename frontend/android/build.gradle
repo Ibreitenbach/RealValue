@@ -5,6 +5,7 @@ buildscript {
         minSdkVersion = 21
         compileSdkVersion = 34
         targetSdkVersion = 34
+        ndkVersion = "25.2.9519653" // Added NDK version
         kotlinVersion = "1.8.0"
     }
     repositories {
@@ -12,14 +13,20 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:8.2.1")
+        // Updated Android Gradle Plugin version for compatibility with Gradle 8.14.3
+        classpath("com.android.tools.build:gradle:8.4.2") // Updated to 8.4.2
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
 
 allprojects {
     repositories {
+        // Prioritize React Native's official Maven repository
+        maven { url "https://maven.pkg.github.com/react-native/maven" } // This is the official RN Maven URL
+        maven { url "$rootDir/../node_modules/react-native/android" } // Local React Native Maven repository
         mavenCentral()
         google()
+        maven { url 'https://www.jitpack.io' }
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
     }
 }
