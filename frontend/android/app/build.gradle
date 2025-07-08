@@ -1,31 +1,77 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-buildscript {
-    ext {
-        buildToolsVersion = "34.0.0"
-        minSdkVersion = 21
-        compileSdkVersion = 34
-        targetSdkVersion = 34
-        ndkVersion = "25.2.9519653" // Added NDK version
-        kotlinVersion = "1.8.0"
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+}
+
+android {
+    namespace = "com.example.app" // Placeholder, may need adjustment
+    compileSdk = rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        applicationId = "com.example.app" // Placeholder, may need adjustment
+        minSdk = rootProject.ext.minSdkVersion
+        targetSdk = rootProject.ext.targetSdkVersion
+        versionCode = 1
+        versionName = "1.0"
+        vectorDrawables {
+            useSupportLibrary = true
+        }
     }
-    repositories {
-        google()
-        mavenCentral()
+
+    buildTypes {
+        release {
+            minifyEnabled = false // Default for RN, can be true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
     }
-    dependencies {
-        // Updated Android Gradle Plugin version for compatibility with Gradle 8.14.3
-        classpath("com.android.tools.build:gradle:8.4.2") // Updated to 8.4.2
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    packagingOptions { // Common in React Native
+        pickFirsts += [
+            "lib/x86/libc++_shared.so",
+            "lib/x86_64/libc++_shared.so",
+            "lib/armeabi-v7a/libc++_shared.so",
+            "lib/arm64-v8a/libc++_shared.so"
+        ]
+        jniLibs {
+            useLegacyPackaging = true // May be needed for older RN versions or specific native modules
+        }
     }
 }
 
-allprojects {
-    repositories {
-        mavenCentral()
-        google()
-        maven { url 'https://www.jitpack.io' }
-        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
-        // IMPORTANT: Add the local React Native Maven repository
-        maven { url "$rootDir/../node_modules/react-native/android" } // This line is crucial
-    }
+dependencies {
+    // Kotlin
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:${rootProject.ext.kotlinVersion}")
+
+    // AndroidX Core
+    implementation("androidx.core:core-ktx:1.13.1") // Example, use appropriate version
+    implementation("androidx.appcompat:appcompat:1.7.0") // Example
+
+    // React Native
+    implementation("com.facebook.react:react-android") // RN specific
+
+    // Dependencies for React Native modules will be auto-linked or added here
+
+    // Example: Hermes (if enabled)
+    // if (isNewArchitectureEnabled()) {
+    //     implementation("com.facebook.react:react-native-gradle-plugin")
+    // } else {
+    //     implementation("com.facebook.react:hermes-android")
+    // }
+
+    // Other dependencies
+    // implementation("com.google.android.material:material:1.12.0") // Example
+}
+
+// Apply React Native specific Gradle configurations
+if (project.hasProperty("react")) {
+    apply(from = project.property("react") as String)
 }

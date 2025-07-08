@@ -11,10 +11,10 @@ buildscript {
     repositories {
         // Prioritize comprehensive Google repositories for buildscript dependencies
         google() // Google's Maven repository for AndroidX, Google Play Services, etc.
+        mavenCentral() // Maven Central for most general Java/Kotlin libraries
+
         maven { url = "https://dl.google.com/dl/android/maven2/" } // Explicit Google Maven
         maven { url = "https://maven.google.com" } // Another common Google repository
-        
-        mavenCentral() // Maven Central for most general Java/Kotlin libraries
         
         // Add other necessary repositories for buildscript dependencies if needed
         maven { url = 'https://www.jitpack.io' }
@@ -32,14 +32,14 @@ allprojects {
     repositories {
         // Prioritize comprehensive Google repositories
         google() // Google's Maven repository for AndroidX, Google Play Services, etc.
+        mavenCentral() // Maven Central for most general Java/Kotlin libraries
+
         maven { url = "https://dl.google.com/dl/android/maven2/" } // Explicit Google Maven
         maven { url = "https://maven.google.com" } // Another common Google repository
 
-        mavenCentral() // Maven Central for most general Java/Kotlin libraries
-
         // React Native specific repositories
         maven { url = "https://maven.pkg.github.com/react-native/maven" } // Official RN Maven URL
-        maven { url = "$rootDir/../node_modules/react-native/android" } // Local React Native Maven repository
+        // maven { url = "$rootDir/../node_modules/react-native/android" } // Local React Native Maven repository - Commented out for RN 0.73+
 
         // Other common repositories
         maven { url = 'https://www.jitpack.io' } // Common for some community libraries
