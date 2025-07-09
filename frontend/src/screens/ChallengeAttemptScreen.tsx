@@ -14,12 +14,12 @@ import {
 import * as challengeService from "../services/challengeService";
 import { PracticeChallengeTemplate, ChallengeType, UserChallengeCompletion } from "../types/challengeTypes";
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from "../../app"; // Adjust path if app.tsx is elsewhere
 
 type ChallengeAttemptScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeAttempt'>;
-type ChallengeAttemptScreenNavigationProp = StackNavigationProp<RootStackParamList, 'ChallengeAttempt'>;
+type ChallengeAttemptScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'ChallengeAttempt'>;
 
 // No need for separate interface for props when using hooks directly
 // interface ChallengeAttemptScreenProps { ... }

@@ -19,10 +19,10 @@ import {
 import * as mindContentService from "../services/mindContentService";
 import { MindContent, MindContentCategory } from "../types/mindContentTypes";
 import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from "../../app"; // Adjust path as needed
 
-type MindContentLibraryScreenNavigationProp = StackNavigationProp<RootStackParamList, 'MindContentLibrary'>;
+type MindContentLibraryScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'MindContentLibrary'>;
 
 const MindContentLibraryScreen: React.FC = () => {
   const navigation = useNavigation<MindContentLibraryScreenNavigationProp>();

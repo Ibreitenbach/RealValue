@@ -14,10 +14,10 @@ import { Picker } from '@react-native-picker/picker';
 import * as mindContentService from '../services/mindContentService';
 import { MindContentCategory, MindContentType, NewMindContentData, UpdateMindContentData, MindContent } from '../types/mindContentTypes';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../app'; // Adjust path as needed
 
-type MindContentFormScreenNavigationProp = StackNavigationProp<RootStackParamList, 'MindContentForm'>;
+type MindContentFormScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'MindContentForm'>;
 type MindContentFormScreenRouteProp = RouteProp<RootStackParamList, 'MindContentForm'>;
 
 interface FormData {

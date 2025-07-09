@@ -13,10 +13,10 @@ import {
 import * as challengeService from "../services/challengeService";
 import { PracticeChallengeTemplate, DifficultyLevel } from "../types/challengeTypes";
 import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from "../../app"; // Adjust path if app.tsx is elsewhere
 
-type PracticeChallengesScreenNavigationProp = StackNavigationProp<RootStackParamList, 'PracticeChallenges'>;
+type PracticeChallengesScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'PracticeChallenges'>;
 
 interface Filters {
   difficulty?: DifficultyLevel | "";
