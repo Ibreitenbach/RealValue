@@ -12,10 +12,10 @@ import {
 import * as challengeService from "../services/challengeService";
 import { UserChallengeCompletion } from "../types/challengeTypes";
 import { useNavigation } from '@react-navigation/native'; // Added
-import { StackNavigationProp } from '@react-navigation/stack'; // Added
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'; // Added
 import { RootStackParamList } from "../../app"; // Adjust path if app.tsx is elsewhere
 
-type MyCompletionsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'MyCompletions'>; // Changed to 'MyCompletions'
+type MyCompletionsScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'MyCompletions'>; // Changed to 'MyCompletions'
 
 const MyCompletionsScreen: React.FC = () => {
   const navigation = useNavigation<MyCompletionsScreenNavigationProp>(); // Initialized
