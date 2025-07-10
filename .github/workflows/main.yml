@@ -24,7 +24,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # --- NEW STEP ---
       # Step 2: Verify that yarn.lock exists before trying to cache or install.
       # The caching mechanism in the next step depends on this file. For reproducible
       # builds, yarn.lock should be committed to your repository.
@@ -89,7 +88,14 @@ jobs:
         # to build the unsigned release APK.
         run: ./gradlew clean assembleRelease
 
-      # Step 8: Upload the generated APK as a build artifact
+      # --- NEW DEBUGGING STEP ---
+      # Step 8: List files in the build outputs directory to find the APK
+      # This will help us confirm the exact path and filename of the generated APK
+      # in case it differs from the standard 'app-release.apk'.
+      - name: List Build Output Files
+        run: ls -R frontend/android/app/build/outputs/apk
+
+      # Step 9: Upload the generated APK as a build artifact
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
