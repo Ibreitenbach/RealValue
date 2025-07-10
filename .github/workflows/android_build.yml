@@ -1,65 +1,94 @@
+# Name of the workflow
 name: Android APK Build and Upload
 
+# Controls when the workflow will run
 on:
+  # Triggers the workflow on push events but only for the main branch
   push:
     branches:
-      - main # Trigger on push to the main branch
+      - main
+  # Triggers the workflow on pull request events but only for the main branch
   pull_request:
     branches:
-      - main # Trigger on pull requests to the main branch
+      - main
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build_android_apk:
-    runs-on: ubuntu-latest # Use the latest Ubuntu runner, which has Android SDK pre-installed
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
 
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      # Step 1: Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout Repository
-        uses: actions/checkout@v4 # Action to check out your code
+        uses: actions/checkout@v4
 
+      # Step 2: Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18 # Use Node.js 18, compatible with RN 0.71.19
-          cache: 'yarn' # Cache Yarn dependencies
-          cache-dependency-path: 'frontend/yarn.lock' # Path to your yarn.lock file for caching
+          # --- CONFIGURATION ---
+          # Specify the Node.js version to use.
+          node-version: 18
+          # --- OPTIMIZATION ---
+          # Enable caching for Yarn. This significantly speeds up builds by restoring
+          # dependencies from a cache instead of downloading them every time.
+          cache: 'yarn'
+          # --- CORRECTION ---
+          # The path to the yarn.lock file. It's crucial that 'frontend/yarn.lock' is
+          # committed to your repository for caching to work correctly.
+          # The previous error showed this path couldn't be found, which is the
+          # primary reason for the failure.
+          cache-dependency-path: 'frontend/yarn.lock'
 
+      # Step 3: Install JavaScript dependencies using Yarn
       - name: Install JavaScript Dependencies
-        working-directory: frontend # Run commands from the frontend directory
-        run: |
-          set -euxo pipefail # Added for verbose logging and immediate exit on error
-          yarn install # REMOVED --frozen-lockfile to allow yarn.lock to be generated if missing
-          env:
-          # This is important for some React Native dependencies that might need npm registry access
-          # You might not need this if all dependencies are public
-          # NPM_TOKEN: ${{ secrets.NPM_TOKEN }} 
+        # --- BEST PRACTICE ---
+        # Set the working directory for this step to your 'frontend' folder.
+        working-directory: frontend
+        # --- CORRECTION & BEST PRACTICE ---
+        # Use 'yarn install --frozen-lockfile'.
+        # --frozen-lockfile is a critical best practice for CI/CD. It ensures that
+        # Yarn installs the exact versions of dependencies specified in your
+        # 'yarn.lock' file and will fail if the yarn.lock file is out of sync with
+        # package.json. This guarantees reproducible builds.
+        # This requires 'frontend/yarn.lock' to be committed to your repository.
+        run: yarn install --frozen-lockfile
 
+      # Step 4: Set up Java Development Kit (JDK)
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin' # Recommended distribution
-          java-version: '17' # Use JDK 17, as required by your current setup
-          cache: 'gradle' # Cache Gradle dependencies
+          # Use the Temurin distribution of OpenJDK
+          distribution: 'temurin'
+          # Set the Java version required for your Android build
+          java-version: '17'
+          # --- OPTIMIZATION ---
+          # Enable caching for Gradle dependencies to speed up the build process.
+          cache: 'gradle'
 
+      # Step 5: Grant execute permissions to the Gradle wrapper script
+      # This is necessary because file permissions are not always preserved in git.
       - name: Grant Execute Permissions for gradlew
-        run: chmod +x frontend/android/gradlew # Ensure gradlew is executable
+        run: chmod +x frontend/android/gradlew
 
+      # Step 6: Build the Android Release APK
       - name: Build Android Release APK
-        # This step performs the actual Android build
-        working-directory: frontend/android # Execute Gradle commands from the android directory
-        run: |
-          set -euxo pipefail # Added for verbose logging and immediate exit on error
-          ./gradlew clean assembleRelease
-          env:
-          # Ensure ANDROID_HOME is correctly set for the build process
-          # GitHub Actions 'ubuntu-latest' runner usually has SDK installed at a standard path.
-          # If your 'local.properties' has sdk.dir, that takes precedence.
-          # ANDROID_HOME: /usr/local/lib/android/sdk # Common path, adjust if your specific runner is different or you installed it elsewhere in a custom action.
-          # You might also want to set more memory for Gradle if builds are failing due to OOM errors
-          # ORG_GRADLE_PROJECT_org_gradle_daemon_jvm_args: "-Xmx3072m -XX:MaxPermSize=512m"
+        # Set the working directory to the 'android' subfolder within 'frontend'
+        working-directory: frontend/android
+        # --- BEST PRACTICE ---
+        # Run 'clean' to remove any previous build outputs and then 'assembleRelease'
+        # to build the unsigned release APK.
+        run: ./gradlew clean assembleRelease
 
+      # Step 7: Upload the generated APK as a build artifact
       - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4 # Action to upload build artifacts
+        uses: actions/upload-artifact@v4
         with:
-          name: app-release-apk # Name for the uploaded artifact
-          path: frontend/android/app/build/outputs/apk/release/app-release.apk # Path to your release APK
-          retention-days: 7 # Optional: How long to keep the artifact (e.g., 7 days)
+          # The name of the artifact to be uploaded.
+          name: app-release-apk
+          # The path to the file to upload. This is the standard output path for a release APK.
+          path: frontend/android/app/build/outputs/apk/release/app-release.apk
+          # Optional: Set the number of days to retain the artifact.
+          retention-days: 7
