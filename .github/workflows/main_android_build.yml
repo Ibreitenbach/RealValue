@@ -1,141 +1,65 @@
-name: React Native Android APK Build
+name: Android APK Build and Upload
+
 on:
   push:
     branches:
-      - main # Trigger on pushes to the main branch
-  workflow_dispatch: # Allows manual triggering from the GitHub Actions tab
+      - main # Trigger on push to the main branch
+  pull_request:
+    branches:
+      - main # Trigger on pull requests to the main branch
 
 jobs:
-  build_android:
-    runs-on: ubuntu-latest # Use a fresh Ubuntu environment provided by GitHub
+  build_android_apk:
+    runs-on: ubuntu-latest # Use the latest Ubuntu runner, which has Android SDK pre-installed
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4 # Action to check out your code
 
-    # Moved these steps earlier to ensure permissions are set before gradlew is called
-    - name: Grant execute permission to gradlew
-      # Grant permissions to gradlew in its location
-      run: chmod 777 frontend/android/gradlew
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18 # Use Node.js 18, compatible with RN 0.71.19
+          cache: 'yarn' # Cache Yarn dependencies
+          cache-dependency-path: 'frontend/yarn.lock' # Path to your yarn.lock file for caching
 
-    - name: Verify gradlew file type and permissions
-      # Displays file type (e.g., "Bourne-Again shell script") and permissions
-      run: |
-        file frontend/android/gradlew
-        ls -l frontend/android/gradlew
+      - name: Install JavaScript Dependencies
+        working-directory: frontend # Run commands from the frontend directory
+        run: |
+          set -euxo pipefail # Added for verbose logging and immediate exit on error
+          yarn install --frozen-lockfile # Use --frozen-lockfile for CI builds to ensure reproducible installs
+        env:
+          # This is important for some React Native dependencies that might need npm registry access
+          # You might not need this if all dependencies are public
+          # NPM_TOKEN: ${{ secrets.NPM_TOKEN }} 
 
-    - name: List Android project files for debugging
-      # List contents of the frontend/android directory to verify structure
-      run: |
-        echo "Listing contents of frontend/android:"
-        ls -la frontend/android
-        echo "Listing contents of frontend/android/app:"
-        ls -la frontend/android/app || true # Use || true to prevent job failure if directory doesn't exist yet
-        echo "Listing contents of frontend/android/gradle:"
-        ls -la frontend/android/gradle || true
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin' # Recommended distribution
+          java-version: '17' # Use JDK 17, as required by your current setup
+          cache: 'gradle' # Cache Gradle dependencies
 
-    - name: Set up Node.js (using Node 18 LTS for broader compatibility)
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'yarn' # Cache yarn dependencies
-        cache-dependency-path: frontend/yarn.lock # Explicitly tell where yarn.lock is for caching
+      - name: Grant Execute Permissions for gradlew
+        run: chmod +x frontend/android/gradlew # Ensure gradlew is executable
 
-    - name: Aggressive Clean Node Modules & Install with Yarn
-      # If using --frozen-lockfile, do NOT delete yarn.lock as it must be present and up-to-date.
-      # Only delete node_modules for a clean install.
-      run: |
-        cd frontend
-        rm -rf node_modules # Remove node_modules only
-        npm cache clean --force # Clear npm's global cache
-        yarn cache clean --all # Clean yarn cache
-        yarn install --frozen-lockfile # Use yarn to install, --frozen-lockfile ensures reproducibility
-      env:
-        NODE_PATH: ./node_modules # Explicitly set NODE_PATH for resolution
+      - name: Build Android Release APK
+        # This step performs the actual Android build
+        working-directory: frontend/android # Execute Gradle commands from the android directory
+        run: |
+          set -euxo pipefail # Added for verbose logging and immediate exit on error
+          ./gradlew clean assembleRelease
+        env:
+          # Ensure ANDROID_HOME is correctly set for the build process
+          # GitHub Actions 'ubuntu-latest' runner usually has SDK installed at a standard path.
+          # If your 'local.properties' has sdk.dir, that takes precedence.
+          # ANDROID_HOME: /usr/local/lib/android/sdk # Common path, adjust if your specific runner is different or you installed it elsewhere in a custom action.
+          # You might also want to set more memory for Gradle if builds are failing due to OOM errors
+          # ORG_GRADLE_PROJECT_org_gradle_daemon_jvm_args: "-Xmx3072m -XX:MaxPermSize=512m"
 
-    - name: Ensure build reports directory exists
-      # Create the build reports directory before the build step to capture logs
-      run: mkdir -p frontend/android/app/build/reports
-
-    - name: Clean Android build cache
-      # Use working-directory to set the project root, remove --settings-file
-      run: ./gradlew clean --stacktrace --info --debug --warning-mode=all
-      working-directory: frontend/android # Set working directory for this step
-
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: 'gradle' # Cache Gradle dependencies for faster builds
-
-    - name: Remove problematic Gradle configurations and ensure app module inclusion
-      # This step now also removes the rootProject.name and ensures 'include :app' in frontend/android/settings.gradle
-      run: |
-        # Check for gradle.properties at project root and remove/comment out org.gradle.java.home
-        if [ -f gradle.properties ]; then
-          sed -i '/^org\.gradle\.java\.home=/d' gradle.properties
-        fi
-        # Check for gradle.properties in frontend/android directory and remove/comment out org.gradle.java.home
-        if [ -f frontend/android/gradle.properties ]; then
-          sed -i '/^org\.gradle\.java\.home=/d' frontend/android/gradle.properties
-        fi
-        # IMPORTANT: Remove rootProject.name from frontend/android/settings.gradle
-        # This line can cause conflicts if frontend/android is meant to be a subproject
-        if [ -f frontend/android/settings.gradle ]; then
-          sed -i '/^rootProject\.name=/d' frontend/android/settings.gradle
-          # Ensure 'include ':app'' is present in settings.gradle
-          if ! grep -q "include ':app'" frontend/android/settings.gradle; then
-            echo "include ':app'" >> frontend/android/settings.gradle
-            echo "Added 'include ':app'' to frontend/android/settings.gradle"
-          fi
-        fi
-        echo "Attempted to remove problematic Gradle configurations and ensure app module inclusion."
-
-    - name: Bundle React Native Assets
-      # This step explicitly bundles JS assets into the Android project's assets folder
-      run: |
-        cd frontend
-        mkdir -p android/app/src/main/assets # Create the assets directory before bundling
-        yarn react-native bundle \
-          --platform android \
-          --dev false \
-          --entry-file index.js \
-          --bundle-output android/app/src/main/assets/index.android.bundle \
-          --assets-dest android/app/src/main/res
-      env:
-        NODE_PATH: ./node_modules # Re-set NODE_PATH for this step as well
-        REACT_NATIVE_PACKAGER_HOSTNAME: localhost # Sometimes needed for Metro in CI
-
-    - name: Build Debug APK
-      # Use working-directory to set the project root, remove --settings-file
-      run: |
-        bash ./gradlew assembleDebug \
-          -DreactNativeDebug=true \
-          -Dvariant=debug \
-          -Dgradle.properties.exclude=org.gradle.java.home \
-          --stacktrace --info --debug --warning-mode=all
-      working-directory: frontend/android # Set working directory for this step
-
-    - name: Upload Debug APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: debug-apk
-        path: frontend/android/app/build/outputs/apk/debug/app-debug.apk
-
-    - name: Print full Gradle and Java compiler logs on failure
-      if: failure() # This step will ONLY run if a previous step in the job fails
-      run: |
-        echo "=== Looking for Java compiler and Gradle logs ==="
-        # Print all logs from build/reports, build/tmp, and all .log/.txt files in app/build
-        find frontend/android/app/build -type f \( -name "*.log" -o -name "*.txt" \) -exec echo "----- {} -----" \; -exec cat {} \; || true
-        # Also print the last 200 lines of the main Gradle build log if it exists
-        if [ -f frontend/android/app/build/reports/build.log ]; then
-          echo "=== build.log ==="
-          tail -n 200 frontend/android/app/build/reports/build.log
-        fi
-        # Check Gradle daemon logs in home directory
-        if [ -d ~/.gradle/daemon ]; then
-          echo "=== Gradle Daemon Logs ==="
-          find ~/.gradle/daemon -type f -name "*.log" -exec tail -n 100 {} \;
-        fi
-        echo "=== End of logs ==="
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4 # Action to upload build artifacts
+        with:
+          name: app-release-apk # Name for the uploaded artifact
+          path: frontend/android/app/build/outputs/apk/release/app-release.apk # Path to your release APK
+          retention-days: 7 # Optional: How long to keep the artifact (e.g., 7 days)
