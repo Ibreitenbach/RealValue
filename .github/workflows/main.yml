@@ -88,20 +88,15 @@ jobs:
         # to build the unsigned release APK.
         run: ./gradlew clean assembleRelease
 
-      # --- NEW DEBUGGING STEP ---
-      # Step 8: List files in the build outputs directory to find the APK
-      # This will help us confirm the exact path and filename of the generated APK
-      # in case it differs from the standard 'app-release.apk'.
-      - name: List Build Output Files
-        run: ls -R frontend/android/app/build/outputs/apk
-
-      # Step 9: Upload the generated APK as a build artifact
+      # Step 8: Upload the generated APK as a build artifact
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           # The name of the artifact to be uploaded.
           name: app-release-apk
-          # The path to the file to upload. This is the standard output path for a release APK.
-          path: frontend/android/app/build/outputs/apk/release/app-release.apk
+          # --- CORRECTION ---
+          # The path to the file to upload. The logs showed the file is named
+          # 'app-release-unsigned.apk', so we use that exact name here.
+          path: frontend/android/app/build/outputs/apk/release/app-release-unsigned.apk
           # Optional: Set the number of days to retain the artifact.
           retention-days: 7
