@@ -3,10 +3,10 @@ buildscript {
     ext {
         buildToolsVersion = "34.0.0"
         minSdkVersion = 21
-        compileSdkVersion = 34
-        targetSdkVersion = 34
+        compileSdkVersion = 33 // Aligned with AGP 7.4.2 recommendation
+        targetSdkVersion = 33 // Aligned with AGP 7.4.2 recommendation
         ndkVersion = "25.2.9519653" // Added NDK version
-        kotlinVersion = "1.9.20" // Updated Kotlin version to 1.9.20
+        kotlinVersion = "1.8.0" // Downgraded Kotlin for AGP 7.4.2
     }
     repositories {
         // Prioritize comprehensive Google repositories for buildscript dependencies
@@ -23,7 +23,7 @@ buildscript {
     }
     dependencies {
         // Updated Android Gradle Plugin version for compatibility with Gradle 8.14.3
-        classpath("com.android.tools.build:gradle:8.4.2") // Updated to 8.4.2
+        classpath("com.android.tools.build:gradle:7.4.2") // Downgraded AGP for RN 0.71.x
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
@@ -39,7 +39,7 @@ allprojects {
 
         // React Native specific repositories
         maven { url = "https://maven.pkg.github.com/react-native/maven" } // Official RN Maven URL
-        // maven { url = "$rootDir/../node_modules/react-native/android" } // Local React Native Maven repository - Commented out for RN 0.73+
+        maven { url = "$rootDir/../node_modules/react-native/android" } // Local React Native Maven repository - REQUIRED for RN < 0.73
 
         // Other common repositories
         maven { url = 'https://www.jitpack.io' } // Common for some community libraries
