@@ -52,11 +52,11 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:${rootProject.ext.kotlinVersion}")
 
     // AndroidX Core
-    implementation("androidx.core:core-ktx:1.13.1") // Example, use appropriate version
-    implementation("androidx.appcompat:appcompat:1.7.0") // Example
+    implementation("androidx.core:core-ktx:1.9.0") // Downgraded for compileSdk 33
+    implementation("androidx.appcompat:appcompat:1.6.1") // Downgraded for compileSdk 33
 
     // React Native
-    implementation("com.facebook.react:react-android") // RN specific
+    implementation("com.facebook.react:react-android:0.71.19") // RN specific, with version
 
     // Dependencies for React Native modules will be auto-linked or added here
 
