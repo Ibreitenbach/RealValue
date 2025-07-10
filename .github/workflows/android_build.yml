@@ -24,7 +24,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # --- NEW STEP ---
       # Step 2: Verify that yarn.lock exists before trying to cache or install.
       # The caching mechanism in the next step depends on this file. For reproducible
       # builds, yarn.lock should be committed to your repository.
@@ -95,7 +94,9 @@ jobs:
         with:
           # The name of the artifact to be uploaded.
           name: app-release-apk
-          # The path to the file to upload. This is the standard output path for a release APK.
-          path: frontend/android/app/build/outputs/apk/release/app-release.apk
+          # --- CORRECTION ---
+          # The path to the file to upload. The logs showed the file is named
+          # 'app-release-unsigned.apk', so we use that exact name here.
+          path: frontend/android/app/build/outputs/apk/release/app-release-unsigned.apk
           # Optional: Set the number of days to retain the artifact.
           retention-days: 7
