@@ -676,3 +676,7 @@ $RECYCLE.BIN/
 
 # Android specific
 frontend/android/local.properties
+
+# Dependency lock files
+package-lock.json
+yarn.lock
