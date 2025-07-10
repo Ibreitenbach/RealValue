@@ -28,7 +28,7 @@ jobs:
         run: |
           set -euxo pipefail # Added for verbose logging and immediate exit on error
           yarn install --frozen-lockfile # Use --frozen-lockfile for CI builds to ensure reproducible installs
-        env:
+          env:
           # This is important for some React Native dependencies that might need npm registry access
           # You might not need this if all dependencies are public
           # NPM_TOKEN: ${{ secrets.NPM_TOKEN }} 
@@ -49,7 +49,7 @@ jobs:
         run: |
           set -euxo pipefail # Added for verbose logging and immediate exit on error
           ./gradlew clean assembleRelease
-        env:
+          env:
           # Ensure ANDROID_HOME is correctly set for the build process
           # GitHub Actions 'ubuntu-latest' runner usually has SDK installed at a standard path.
           # If your 'local.properties' has sdk.dir, that takes precedence.
