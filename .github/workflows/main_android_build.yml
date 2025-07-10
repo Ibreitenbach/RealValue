@@ -61,10 +61,10 @@ jobs:
       run: ./gradlew clean --stacktrace --info --debug --warning-mode=all
       working-directory: frontend/android # Set working directory for this step
 
-    - name: Set up JDK 17 # Changed back to JDK 17 as required by Android Gradle Plugin
+    - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
-        java-version: '17' # Changed to 17
+        java-version: '17'
         distribution: 'temurin'
         cache: 'gradle' # Cache Gradle dependencies for faster builds
 
