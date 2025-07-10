@@ -25,8 +25,6 @@ jobs:
         uses: actions/checkout@v4
 
       # Step 2: Verify that yarn.lock exists before trying to cache or install.
-      # The caching mechanism in the next step depends on this file. For reproducible
-      # builds, yarn.lock should be committed to your repository.
       - name: Verify yarn.lock exists
         run: |
           if [[ ! -f "frontend/yarn.lock" ]]; then
@@ -39,64 +37,62 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          # --- CONFIGURATION ---
-          # Specify the Node.js version to use.
           node-version: 18
-          # --- OPTIMIZATION ---
-          # Enable caching for Yarn. This significantly speeds up builds by restoring
-          # dependencies from a cache instead of downloading them every time.
-          # This step uses the hash of 'frontend/yarn.lock' as the cache key.
           cache: 'yarn'
           cache-dependency-path: 'frontend/yarn.lock'
 
       # Step 4: Install JavaScript dependencies using Yarn
       - name: Install JavaScript Dependencies
-        # --- BEST PRACTICE ---
-        # Set the working directory for this step to your 'frontend' folder.
         working-directory: frontend
-        # --- CORRECTION & BEST PRACTICE ---
-        # Use 'yarn install --frozen-lockfile'.
-        # This is a critical best practice for CI/CD. It ensures that
-        # Yarn installs the exact versions of dependencies specified in your
-        # 'yarn.lock' file and will fail if the yarn.lock file is out of sync with
-        # package.json. This guarantees reproducible builds.
         run: yarn install --frozen-lockfile
 
       # Step 5: Set up Java Development Kit (JDK)
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          # Use the Temurin distribution of OpenJDK
           distribution: 'temurin'
-          # Set the Java version required for your Android build
           java-version: '17'
-          # --- OPTIMIZATION ---
-          # Enable caching for Gradle dependencies to speed up the build process.
           cache: 'gradle'
 
       # Step 6: Grant execute permissions to the Gradle wrapper script
-      # This is necessary because file permissions are not always preserved in git.
       - name: Grant Execute Permissions for gradlew
         run: chmod +x frontend/android/gradlew
 
-      # Step 7: Build the Android Release APK
-      - name: Build Android Release APK
-        # Set the working directory to the 'android' subfolder within 'frontend'
-        working-directory: frontend/android
-        # --- BEST PRACTICE ---
-        # Run 'clean' to remove any previous build outputs and then 'assembleRelease'
-        # to build the unsigned release APK.
-        run: ./gradlew clean assembleRelease
+      # --- NEW SIGNING STEP ---
+      # Step 7: Decode and set up the release keystore
+      # This step takes the Base64 encoded keystore from GitHub Secrets and decodes it
+      # back into a file that the Gradle build can use for signing.
+      - name: Decode Keystore
+        # This step only runs if the required secret is present.
+        if: secrets.MY_RELEASE_KEYSTORE_BASE64 != ''
+        working-directory: frontend/android/app
+        run: |
+          echo ${{ secrets.MY_RELEASE_KEYSTORE_BASE64 }} | base64 --decode > my-release-key.keystore
 
-      # Step 8: Upload the generated APK as a build artifact
+      # Step 8: Build the Android Release APK
+      - name: Build Signed Android Release APK
+        working-directory: frontend/android
+        # This now runs 'assembleRelease' to create a signed APK.
+        # It passes the signing credentials securely from GitHub Secrets.
+        run: >
+          ./gradlew assembleRelease
+          -Pandroid.injected.signing.store.file=../app/my-release-key.keystore
+          -Pandroid.injected.signing.store.password=${{ secrets.MY_RELEASE_STORE_PASSWORD }}
+          -Pandroid.injected.signing.key.alias=${{ secrets.MY_RELEASE_KEY_ALIAS }}
+          -Pandroid.injected.signing.key.password=${{ secrets.MY_RELEASE_KEY_PASSWORD }}
+        env:
+          # This ensures the secrets are available as environment variables if needed,
+          # though we are passing them directly as properties with -P for better security.
+          MY_RELEASE_STORE_PASSWORD: ${{ secrets.MY_RELEASE_STORE_PASSWORD }}
+          MY_RELEASE_KEY_ALIAS: ${{ secrets.MY_RELEASE_KEY_ALIAS }}
+          MY_RELEASE_KEY_PASSWORD: ${{ secrets.MY_RELEASE_KEY_PASSWORD }}
+
+
+      # Step 9: Upload the generated APK as a build artifact
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          # The name of the artifact to be uploaded.
-          name: app-release-apk
-          # --- CORRECTION ---
-          # The path to the file to upload. The logs showed the file is named
-          # 'app-release-unsigned.apk', so we use that exact name here.
-          path: frontend/android/app/build/outputs/apk/release/app-release-unsigned.apk
-          # Optional: Set the number of days to retain the artifact.
+          name: app-release-signed-apk
+          # The path now points to the signed APK.
+          path: frontend/android/app/build/outputs/apk/release/app-release.apk
           retention-days: 7
