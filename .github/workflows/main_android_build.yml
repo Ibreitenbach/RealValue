@@ -1,54 +1,13 @@
-name: Android APK Build and Upload
+name: Test Simple Workflow
 
 on:
   push:
     branches:
-      - main # Trigger on push to the main branch
-  pull_request:
-    branches:
-      - main # Trigger on pull requests to the main branch
+      - main
 
 jobs:
-  build_android_apk:
-    runs-on: ubuntu-latest # Use the latest Ubuntu runner, which has Android SDK pre-installed
-
+  simple_job:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4 # Action to check out your code
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18 # Use Node.js 18, compatible with RN 0.71.19
-          cache: 'yarn' # Cache Yarn dependencies
-          cache-dependency-path: 'frontend/yarn.lock' # Path to your yarn.lock file for caching
-
-      - name: Install JavaScript Dependencies
-        working-directory: frontend # Run commands from the frontend directory
-        run: |
-          set -euxo pipefail # Added for verbose logging and immediate exit on error
-          yarn install --frozen-lockfile # Use --frozen-lockfile for CI builds to ensure reproducible installs
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin' # Recommended distribution
-          java-version: '17' # Use JDK 17, as required by your current setup
-          cache: 'gradle' # Cache Gradle dependencies
-
-      - name: Grant Execute Permissions for gradlew
-        run: chmod +x frontend/android/gradlew # Ensure gradlew is executable
-
-      - name: Build Android Release APK
-        # This step performs the actual Android build
-        working-directory: frontend/android # Execute Gradle commands from the android directory
-        run: |
-          set -euxo pipefail # Added for verbose logging and immediate exit on error
-          ./gradlew clean assembleRelease
-        
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4 # Action to upload build artifacts
-        with:
-          name: app-release-apk # Name for the uploaded artifact
-          path: frontend/android/app/build/outputs/apk/release/app-release.apk # Path to your release APK
-          retention-days: 7 # Optional: How long to keep the artifact (e.g., 7 days)
+      - name: Just Say Hello
+        run: echo "Hello from GitHub Actions!"
