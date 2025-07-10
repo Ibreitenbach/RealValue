@@ -45,14 +45,7 @@ jobs:
         run: |
           set -euxo pipefail # Added for verbose logging and immediate exit on error
           ./gradlew clean assembleRelease
-        env:
-          # Ensure ANDROID_HOME is correctly set for the build process
-          # GitHub Actions 'ubuntu-latest' runner usually has SDK installed at a standard path.
-          # If your 'local.properties' has sdk.dir, that takes precedence.
-          # ANDROID_HOME: /usr/local/lib/android/sdk # Common path, adjust if your specific runner is different or you installed it elsewhere in a custom action.
-          # You might also want to set more memory for Gradle if builds are failing due to OOM errors
-          # ORG_GRADLE_PROJECT_org_gradle_daemon_jvm_args: "-Xmx3072m -XX:MaxPermSize=512m"
-
+        
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4 # Action to upload build artifacts
         with:
