@@ -26,6 +26,7 @@ jobs:
       - name: Install JavaScript Dependencies
         working-directory: frontend # Run commands from the frontend directory
         run: |
+          set -euxo pipefail # Added for verbose logging and immediate exit on error
           yarn install --frozen-lockfile # Use --frozen-lockfile for CI builds to ensure reproducible installs
         env:
           # This is important for some React Native dependencies that might need npm registry access
@@ -46,6 +47,7 @@ jobs:
         # This step performs the actual Android build
         working-directory: frontend/android # Execute Gradle commands from the android directory
         run: |
+          set -euxo pipefail # Added for verbose logging and immediate exit on error
           ./gradlew clean assembleRelease
         env:
           # Ensure ANDROID_HOME is correctly set for the build process
