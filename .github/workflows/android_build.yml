@@ -58,7 +58,6 @@ jobs:
       - name: Grant Execute Permissions for gradlew
         run: chmod +x frontend/android/gradlew
 
-      # --- NEW SIGNING STEP ---
       # Step 7: Decode and set up the release keystore
       # This step takes the Base64 encoded keystore from GitHub Secrets and decodes it
       # back into a file that the Gradle build can use for signing.
@@ -87,8 +86,18 @@ jobs:
           MY_RELEASE_KEY_ALIAS: ${{ secrets.MY_RELEASE_KEY_ALIAS }}
           MY_RELEASE_KEY_PASSWORD: ${{ secrets.MY_RELEASE_KEY_PASSWORD }}
 
+      # --- NEW VERIFICATION STEP ---
+      # Step 9: Verify the APK is signed
+      # This uses the apksigner tool from the Android SDK to confirm that the
+      # output APK has been successfully signed. If it's not signed, this step will fail.
+      - name: Verify Signed APK
+        run: |
+          # The ANDROID_SDK_ROOT variable is set by the GitHub runner environment
+          # We find the latest version of apksigner and use it to verify the APK.
+          APKSIGNER_PATH=$(find $ANDROID_SDK_ROOT/build-tools -name "apksigner" | sort -r | head -n 1)
+          $APKSIGNER_PATH verify --print-certs frontend/android/app/build/outputs/apk/release/app-release.apk
 
-      # Step 9: Upload the generated APK as a build artifact
+      # Step 10: Upload the generated APK as a build artifact
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
