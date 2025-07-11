@@ -24,16 +24,8 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Step 2: Verify that yarn.lock exists before trying to cache or install.
-      - name: Verify yarn.lock exists
-        run: |
-          if [[ ! -f "frontend/yarn.lock" ]]; then
-            echo "::error file=frontend/package.json::'frontend/yarn.lock' not found."
-            echo "::error file=frontend/package.json::Please run 'yarn install' in your 'frontend' directory locally and commit the generated 'yarn.lock' file to your repository."
-            exit 1
-          fi
-
-      # Step 3: Set up Node.js environment and cache dependencies
+      # Step 2: Set up Node.js environment and cache dependencies
+      # The 'cache-dependency-path' relies on 'frontend/yarn.lock' being present in your repo.
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -41,12 +33,13 @@ jobs:
           cache: 'yarn'
           cache-dependency-path: 'frontend/yarn.lock'
 
-      # Step 4: Install JavaScript dependencies using Yarn
+      # Step 3: Install JavaScript dependencies using Yarn
+      # The '--frozen-lockfile' flag will fail if yarn.lock is missing or out of sync.
       - name: Install JavaScript Dependencies
         working-directory: frontend
         run: yarn install --frozen-lockfile
 
-      # Step 5: Set up Java Development Kit (JDK)
+      # Step 4: Set up Java Development Kit (JDK)
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -54,11 +47,11 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      # Step 6: Grant execute permissions to the Gradle wrapper script
+      # Step 5: Grant execute permissions to the Gradle wrapper script
       - name: Grant Execute Permissions for gradlew
         run: chmod +x frontend/android/gradlew
 
-      # Step 7: Decode and set up the release keystore
+      # Step 6: Decode and set up the release keystore
       # This step takes the Base64 encoded keystore from GitHub Secrets and decodes it
       # back into a file that the Gradle build can use for signing.
       - name: Decode Keystore
@@ -68,7 +61,7 @@ jobs:
         run: |
           echo ${{ secrets.MY_RELEASE_KEYSTORE_BASE64 }} | base64 --decode > my-release-key.keystore
 
-      # Step 8: Build the Android Release APK
+      # Step 7: Build the Android Release APK
       - name: Build Signed Android Release APK
         working-directory: frontend/android
         # This now runs 'assembleRelease' to create a signed APK.
@@ -86,8 +79,7 @@ jobs:
           MY_RELEASE_KEY_ALIAS: ${{ secrets.MY_RELEASE_KEY_ALIAS }}
           MY_RELEASE_KEY_PASSWORD: ${{ secrets.MY_RELEASE_KEY_PASSWORD }}
 
-      # --- NEW VERIFICATION STEP ---
-      # Step 9: Verify the APK is signed
+      # Step 8: Verify the APK is signed
       # This uses the apksigner tool from the Android SDK to confirm that the
       # output APK has been successfully signed. If it's not signed, this step will fail.
       - name: Verify Signed APK
@@ -97,7 +89,7 @@ jobs:
           APKSIGNER_PATH=$(find $ANDROID_SDK_ROOT/build-tools -name "apksigner" | sort -r | head -n 1)
           $APKSIGNER_PATH verify --print-certs frontend/android/app/build/outputs/apk/release/app-release.apk
 
-      # Step 10: Upload the generated APK as a build artifact
+      # Step 9: Upload the generated APK as a build artifact
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
